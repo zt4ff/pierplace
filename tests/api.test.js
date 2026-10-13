@@ -1,0 +1,16 @@
+import { after, before, beforeEach, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { setupServer } from 'msw/node';
+import { createHandlers, createMockStore } from '../src/mocks/handlers.js';
+import { DEFAULT_PROFILE } from '../src/state.js';
+const server = setupServer();
+before(() => server.listen({ onUnhandledRequest: 'error' }));
+after(() => server.close());
+beforeEach(() => server.resetHandlers(...createHandlers(createMockStore(), 0)));
+const request = async (path, method = 'GET', body) => { const response = await fetch(`http://localhost/api${path}`, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); return { status: response.status, data: await response.json() }; };
+const profile = { ...DEFAULT_PROFILE, name: 'Kayode' };
+const admit = () => request('/admission', 'POST', { profile, answers: [1, 2, 1] });
+test('mock admission enforces correct answers and valid profile', async () => { assert.equal((await request('/session')).data.admitted, false); assert.equal((await request('/admission', 'POST', { profile, answers: [0, 2, 1] })).status, 400); assert.equal((await request('/admission', 'POST', { profile: { ...profile, name: '' }, answers: [1, 2, 1] })).status, 400); const result = await admit(); assert.equal(result.status, 200); assert.equal(result.data.admitted, true); });
+test('mock tables isolate chat by table and floor, with labeled simulated replies', async () => { await admit(); const a = '/tables/floor-1-west-1/messages'; const result = await request(a, 'POST', { text: 'Hello world' }); assert.equal(result.status, 201); assert.equal(result.data.messages[0].text, 'Hello world'); assert.equal(result.data.messages[1].name, 'Campus buddy · mock'); assert.equal((await request(a)).data.messages.length, 2); assert.deepEqual((await request('/tables/floor-2-west-1/messages')).data.messages, []); assert.deepEqual((await request('/tables/floor-1-west-2/messages')).data.messages, []); assert.equal((await request(a, 'POST', { text: '  ' })).status, 400); assert.equal((await request('/tables/not-a-table/messages')).status, 404); });
+test('lessons are idempotent and profile edits preserve admission', async () => { await admit(); await request('/lessons/web', 'POST'); await request('/lessons/web', 'POST'); assert.deepEqual((await request('/session')).data.lessons, ['web']); await request('/profile', 'PUT', { ...profile, wearId: false }); const state = (await request('/session')).data; assert.equal(state.admitted, true); assert.equal(state.profile.wearId, false); assert.equal((await request('/floor', 'PUT', { floor: 3 })).status, 400); });
+test('visitors cannot access table chats or mark lessons complete', async () => { assert.equal((await request('/tables/floor-1-west-1/messages')).status, 403); assert.equal((await request('/lessons/web', 'POST')).status, 403); });

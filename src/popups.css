@@ -1,0 +1,17 @@
+/* In-world windows are anchored panels: no backdrop, focus trap, or pause. */
+.floating-layer { position: fixed; inset: 0; z-index: 30; pointer-events: none; }
+.floating-panel { position: absolute; right: max(16px, env(safe-area-inset-right)); top: max(74px, env(safe-area-inset-top)); width: min(720px, calc(100vw - 32px)); max-height: calc(100dvh - 100px); overflow: auto; overscroll-behavior: contain; pointer-events: auto; border: 1px solid #d4d9cb; border-radius: 17px; background: #fffef9f5; box-shadow: 0 14px 45px #27382d30; padding: 30px; animation: appear .18s ease-out; }
+.floating-panel:focus { outline: none; }
+.floating-panel .modal-close { position: absolute; top: 12px; right: 12px; z-index: 2; }
+.floating-panel .modal-header { padding-right: 30px; }
+.floating-panel .modal-header h2 { font-size: 23px; }
+.floating-panel.help-popup { left: 16px; right: auto; width: min(480px, calc(100vw - 32px)); }
+.floating-panel.chat-panel { top: auto; bottom: max(76px, env(safe-area-inset-bottom)); left: 16px; right: auto; width: min(430px, calc(100vw - 32px)); padding: 24px; }
+.floating-panel.chat-panel .chat-messages { min-height: 160px; max-height: min(320px, 40dvh); }
+.floating-panel.profile-editor-popup { width: min(740px, calc(100vw - 32px)); }
+@media(max-width:640px) {
+  .floating-panel { padding: 22px 18px; right: 10px; width: calc(100vw - 20px); max-height: calc(100dvh - 110px); }
+  .floating-panel.help-popup, .floating-panel.chat-panel { left: 10px; width: calc(100vw - 20px); }
+  .floating-panel.profile-editor-popup { width: calc(100vw - 20px); }
+  .floating-panel .modal-header h2 { font-size: 20px; }
+}

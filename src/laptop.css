@@ -1,0 +1,217 @@
+.laptop-hardware-popup,
+.floating-panel.laptop-hardware-popup {
+  --paper: #29262e;
+  --muted: #c1bbc9;
+  --green: #b4d3b4;
+  width: min(960px, calc(100vw - 32px));
+  max-width: 960px;
+  max-height: calc(100dvh - 32px);
+  padding: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: auto;
+  color: #f0edf3;
+  scrollbar-width: thin;
+  scrollbar-color: #55505f transparent;
+}
+
+.floating-panel.laptop-hardware-popup {
+  position: fixed;
+  top: auto;
+  right: 16px;
+  bottom: 16px;
+  z-index: 100;
+  margin: 0;
+}
+
+.laptop-hardware-popup > .modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #64676d;
+  border-radius: 50%;
+  background: #24272c;
+  color: #f5f5f7;
+  box-shadow: 0 2px 5px #0008;
+}
+
+.laptop-hardware-popup > .modal-close:hover { background: #41434a; }
+
+.laptop-hardware-popup .laptop-shell {
+  width: 96%;
+  padding: 0 12px;
+  border: 1px solid #5a5e65;
+  border-bottom-color: #121419;
+  border-radius: 14px 14px 5px 5px;
+  background: linear-gradient(115deg, #34373d, #1a1c21 25%, #24262c 80%, #41444a);
+  box-shadow: inset 0 1px 0 #7e828b80, inset 0 0 0 3px #101115, 0 5px 16px #0005;
+}
+
+.laptop-hardware-popup .laptop-camera-bar {
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+}
+
+.laptop-hardware-popup .laptop-camera {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #56677b 0 12%, #19212f 30%, #050609 65%);
+  box-shadow: 0 0 0 2px #393c43, 0 0 0 3px #15171b;
+}
+
+.laptop-hardware-popup .laptop-camera-light {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #829c87;
+}
+
+.laptop-hardware-popup .laptop-screen {
+  border: 2px solid #090a0e;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px #45464c;
+  color-scheme: dark;
+}
+
+.laptop-hardware-popup .ubuntu-bar {
+  min-height: 27px;
+  background: #17151e;
+  color: #eee8f4;
+}
+
+.laptop-hardware-popup .ubuntu-desktop {
+  height: clamp(180px, calc(100dvh - 285px), 390px);
+  min-height: 0;
+  padding: 14px 14px 14px 66px;
+  background: radial-gradient(ellipse at 90% 12%, #84407066, transparent 60%), linear-gradient(135deg, #241735, #48234f 60%, #6b354d);
+}
+
+.laptop-hardware-popup .ubuntu-dock { width: 52px; background: #17111f99; }
+.laptop-hardware-popup .ubuntu-dock button { width: 38px; height: 38px; }
+
+.laptop-hardware-popup .desktop-window {
+  min-height: 0;
+  border-color: #62586b;
+  border-radius: 7px;
+  background: #29262e;
+}
+
+.laptop-hardware-popup .window-bar {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-color: #4a4254;
+  background: #35303d;
+  color: #e1dbe8;
+}
+
+.laptop-hardware-popup .window-bar button { background: #514957; color: #f3eef7; }
+.laptop-hardware-popup .window-bar button:hover { background: #706178; }
+.laptop-hardware-popup .learning-content { min-height: 0; overflow: auto; padding: 18px; }
+.laptop-hardware-popup .learning-content h2 { color: #f2eef7; font-size: 20px; }
+.laptop-hardware-popup .lesson-card { padding: 13px; background: #35313c; border-color: #514b5b; color: #eee8f4; }
+.laptop-hardware-popup button.lesson-card:hover { background: #423a4c; border-color: #9983ac; }
+.laptop-hardware-popup .lesson-detail { padding: 0 6px 12px; }
+.laptop-hardware-popup .lesson-detail h3 { color: #efe7f6; }
+.laptop-hardware-popup .text-button { color: #c8ddc7; }
+.laptop-hardware-popup .laptop-code-example { padding: 14px; border: 1px solid #53465e; border-radius: 8px; background: #1f1b26; color: #e2d4ef; white-space: pre-wrap; overflow-wrap: anywhere; }
+.laptop-hardware-popup .notes-editor { min-height: 0; background-color: #28232e; color: #f2e9f7; background-image: repeating-linear-gradient(transparent 0, transparent 24px, #bba6cc12 24px, #bba6cc12 25px); }
+.laptop-hardware-popup .notes-editor::placeholder { color: #b7aabd; }
+.laptop-hardware-popup .terminal-output { min-height: 0; max-height: none; background: #211b29; }
+.laptop-hardware-popup .terminal-form { flex-shrink: 0; background: #211b29; }
+.laptop-hardware-popup .desktop-window > p { flex-shrink: 0; color: #c1bbc9; }
+
+.laptop-hardware-popup .laptop-bezel-brand {
+  height: 23px;
+  display: grid;
+  place-items: center;
+  color: #a4a7ad;
+  font: 600 8px/1 sans-serif;
+  letter-spacing: 2.3px;
+  text-shadow: 0 1px 0 #000;
+}
+
+.laptop-hardware-popup .laptop-hinge {
+  display: flex;
+  justify-content: space-between;
+  width: 82%;
+  height: 8px;
+  margin: 0 auto;
+  background: linear-gradient(#111216, #393c43 45%, #0d0e12);
+}
+
+.laptop-hardware-popup .laptop-hinge span {
+  width: 17%;
+  border-inline: 1px solid #62666d;
+  border-radius: 2px;
+  background: linear-gradient(#555960, #1a1d23 55%, #393d44);
+}
+
+.laptop-hardware-popup .laptop-base {
+  height: auto;
+  margin: 0;
+  padding: 10px 18px 0;
+  border: 1px solid #575b64;
+  border-radius: 5px 5px 15px 15px;
+  background: linear-gradient(110deg, #373a41, #272a30 35%, #30333a 75%, #42464e);
+  box-shadow: inset 0 1px 0 #8e929866, inset 0 0 0 2px #1d1f25, 0 8px 16px #0005;
+}
+
+.laptop-hardware-popup .laptop-keyboard-deck { display: grid; grid-template-columns: 20px minmax(0, 1fr) 20px; gap: 16px; }
+.laptop-hardware-popup .laptop-speaker { margin: 4px 0; border-radius: 3px; background: radial-gradient(circle, #08090c 1px, transparent 1.2px) 0 0 / 4px 4px; opacity: .7; }
+.laptop-hardware-popup .laptop-keyboard { padding: 5px; border: 1px solid #14161c; border-radius: 5px; background: #17191f; box-shadow: inset 0 2px 5px #0008, 0 1px 0 #64687280; }
+.laptop-hardware-popup .laptop-key-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.laptop-hardware-popup .laptop-key-row:last-child { margin-bottom: 0; }
+.laptop-hardware-popup .laptop-key { display: grid; place-items: center; flex: 1; min-width: 0; height: 15px; border: 1px solid #464952; border-bottom-color: #0a0b10; border-radius: 3px; background: linear-gradient(#30333a, #21242b); box-shadow: 0 1px 1px #000b; color: #c4c6cf; font: 500 7px/1 sans-serif; }
+.laptop-hardware-popup .laptop-key-row-0 .laptop-key { height: 10px; font-size: 5px; }
+.laptop-hardware-popup .laptop-key-wide { flex: 1.6; font-size: 6px; }
+.laptop-hardware-popup .laptop-key-row-3 .laptop-key-wide { flex: 1.9; }
+.laptop-hardware-popup .laptop-key-row-4 .laptop-key-wide { flex: 2.2; }
+.laptop-hardware-popup .laptop-key-space { flex: 6; }
+
+.laptop-hardware-popup .laptop-palm-rest { position: relative; display: flex; justify-content: center; align-items: center; height: 51px; }
+.laptop-hardware-popup .laptop-trackpad { position: relative; width: 24%; height: 38px; margin: 0; border: 1px solid #111318; border-radius: 4px; background: linear-gradient(130deg, #33363d, #2b2e35); box-shadow: 0 1px 0 #767a8255, inset 0 1px 2px #0003; }
+.laptop-hardware-popup .laptop-trackpad span { position: absolute; bottom: 7px; left: 0; right: 0; height: 1px; background: #181b21; }
+.laptop-hardware-popup .laptop-model-label { position: absolute; left: 5%; bottom: 15px; color: #999da6; font: 6px/1 sans-serif; letter-spacing: .5px; }
+.laptop-hardware-popup .laptop-power-light { position: absolute; right: 4%; bottom: 15px; width: 9px; height: 2px; border-radius: 2px; background: #b8d8c8; box-shadow: 0 0 3px #b8d8c866; }
+.laptop-hardware-popup .laptop-front-edge { display: flex; justify-content: center; height: 6px; margin: 0 -17px; border-top: 1px solid #666b7444; border-radius: 0 0 14px 14px; background: linear-gradient(#292c33, #13151b); }
+.laptop-hardware-popup .laptop-front-edge span { width: 12%; border-radius: 0 0 6px 6px; background: #101218; }
+
+@media (max-width: 640px) {
+  .laptop-hardware-popup,
+  .floating-panel.laptop-hardware-popup { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); padding: 8px; }
+  .floating-panel.laptop-hardware-popup { right: 8px; bottom: 8px; }
+  .laptop-hardware-popup > .modal-close { top: 9px; right: 10px; width: 24px; height: 24px; }
+  .laptop-hardware-popup .laptop-shell { width: 97%; padding-inline: 6px; border-radius: 10px 10px 4px 4px; }
+  .laptop-hardware-popup .laptop-camera-bar { height: 20px; }
+  .laptop-hardware-popup .laptop-bezel-brand { height: 19px; font-size: 7px; }
+  .laptop-hardware-popup .ubuntu-desktop { height: clamp(180px, calc(100dvh - 215px), 410px); padding: 9px 7px 60px; }
+  .laptop-hardware-popup .ubuntu-dock { width: 100%; height: 51px; gap: 12px; }
+  .laptop-hardware-popup .ubuntu-dock button { width: 34px; height: 34px; }
+  .laptop-hardware-popup .ubuntu-bar { padding-inline: 7px; }
+  .laptop-hardware-popup .learning-content { padding: 12px; }
+  .laptop-hardware-popup .learning-content h2 { font-size: 18px; }
+  .laptop-hardware-popup .lesson-card { gap: 9px; padding: 10px; }
+  .laptop-hardware-popup .window-bar { padding-inline: 9px; font-size: 10px; }
+  .laptop-hardware-popup .laptop-base { padding: 6px 9px 0; border-radius: 4px 4px 10px 10px; }
+  .laptop-hardware-popup .laptop-keyboard-deck { grid-template-columns: 8px minmax(0, 1fr) 8px; gap: 5px; }
+  .laptop-hardware-popup .laptop-keyboard { padding: 3px; }
+  .laptop-hardware-popup .laptop-key-row { gap: 2px; margin-bottom: 2px; }
+  .laptop-hardware-popup .laptop-key { height: 10px; font-size: 4px; border-radius: 2px; }
+  .laptop-hardware-popup .laptop-key-row-0 .laptop-key { height: 7px; font-size: 3px; }
+  .laptop-hardware-popup .laptop-key-wide { font-size: 3px; }
+  .laptop-hardware-popup .laptop-palm-rest { height: 34px; }
+  .laptop-hardware-popup .laptop-trackpad { width: 27%; height: 25px; }
+  .laptop-hardware-popup .laptop-model-label { font-size: 4px; bottom: 11px; }
+  .laptop-hardware-popup .laptop-power-light { bottom: 11px; width: 6px; }
+  .laptop-hardware-popup .laptop-front-edge { margin-inline: -8px; height: 5px; }
+}
