@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PixelWorld, drawPreview } from '../src/world.js';
+import { NPC_LINES } from '../src/state.js';
 
-const NPC_NAMES = ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Facility Manager', 'Kayode, the male rep'];
+const NPC_NAMES = ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Facility Manager', 'Kayode, the male rep', 'Mr Emmanuel', 'Mr Itunu'];
 
 class FakeEventTarget {
   listeners = new Map();
@@ -67,7 +68,7 @@ function matchesSelector(element, selector) {
   });
 }
 
-function createHarness(t, { camera = false, bounds = { left: 37, top: 59, width: 660, height: 350 }, dpr = 2, reducedMotion = null } = {}) {
+function createHarness(t, { camera = false, bounds = { left: 37, top: 59, width: 660, height: 350 }, dpr = 2, reducedMotion = null, onObjectsChange } = {}) {
   let time = 0;
   let serial = 0;
   const frames = new Map();
@@ -117,7 +118,7 @@ function createHarness(t, { camera = false, bounds = { left: 37, top: 59, width:
   const selections = [];
   const moves = [];
   const cameraChanges = [];
-  const world = new PixelWorld(canvas, { camera, onCameraChange: state => cameraChanges.push(state),
+  const world = new PixelWorld(canvas, { camera, onObjectsChange, onCameraChange: state => cameraChanges.push(state),
     onInteract: object => selections.push(object), onMove: state => moves.push(state) });
   t.after(() => world.destroy());
   const frame = () => {
@@ -144,16 +145,18 @@ function hasFill(ctx, x, y, w, h, color) {
 
 function assertCollisionFree(world, point = world.player) {
   assert.ok(point.x >= 25 && point.x <= 1295 && point.y >= 29 && point.y <= 675, 'Inside outer walls');
-  assert.ok(!world.layout.obstacles.some(o => point.x > o.x - 9 && point.x < o.x + o.w + 9 &&
+  const layout = world.floors.get(point.floor ?? world.floor).layout;
+  assert.ok(!layout.obstacles.some(o => point.x > o.x - 9 && point.x < o.x + o.w + 9 &&
     point.y > o.y - 9 && point.y < o.y + o.h + 9), `Obstacle collision at ${point.x}, ${point.y}`);
 }
 
-function assertSafeRoute(world) {
-  let previous = { x: world.player.x, y: world.player.y };
-  for (const point of world.path) {
+function assertSafeRoute(world, person = world.player, path = world.path) {
+  let previous = { x: person.x, y: person.y };
+  for (const point of path) {
     const steps = Math.max(1, Math.ceil(Math.hypot(point.x - previous.x, point.y - previous.y) / 2));
     for (let i = 1; i <= steps; i++) {
       assertCollisionFree(world, {
+        floor: person.floor ?? world.floor,
         x: previous.x + (point.x - previous.x) * i / steps,
         y: previous.y + (point.y - previous.y) * i / steps,
       });
@@ -215,16 +218,17 @@ test('string accessories remain visible on NPCs and player profiles', t => {
   assert.equal(hasFill(ctx, x - 5, y - 21, 10, 11, '#c7a15a'), false);
 });
 
-test('both floors have exactly five correctly named NPCs and copied NPC interactions', t => {
+test('floors share seven unique NPCs with correctly named, copied interactions', t => {
   const h = createHarness(t);
   h.world.setActive(true);
   for (const floor of [1, 2]) {
     h.world.setFloor(floor);
     const npcs = h.world.layout.objects.filter(object => object.type === 'npc');
-    assert.equal(npcs.length, 5);
-    assert.deepEqual(npcs.map(object => object.name), NPC_NAMES);
-    assert.deepEqual(npcs.map(object => object.label), NPC_NAMES);
-    assert.deepEqual(npcs.map(object => object.profile.name), NPC_NAMES);
+    const names = floor === 1 ? NPC_NAMES.slice(0, 5) : NPC_NAMES.slice(5);
+    assert.equal(npcs.length, names.length);
+    assert.deepEqual(npcs.map(object => object.name), names);
+    assert.deepEqual(npcs.map(object => object.label), names);
+    assert.deepEqual(npcs.map(object => object.profile.name), names);
     for (const npc of npcs) {
       h.pointer('pointerdown', npc.x, npc.y - 20);
       const selection = h.selections.at(-1);
@@ -234,7 +238,7 @@ test('both floors have exactly five correctly named NPCs and copied NPC interact
       assert.notEqual(selection, npc);
       assert.notEqual(selection.profile, npc.profile);
     }
-    assert.ok(h.ctx.texts.some(item => item.value === 'Kayode, the male rep'));
+    assert.ok(names.every(name => h.ctx.texts.some(item => item.value === name)));
   }
 });
 
@@ -881,38 +885,43 @@ test('camera cleanup releases capture, disconnects resize observers and removes 
   assert.equal(h.win.removed.length, 4);
 });
 
-test('mentors start at individual home seats and Kayode permanently occupies Collaboration A seat nine', t => {
+test('mentors have individual home seats and Kayode occupies only the downstairs seat nine', t => {
   const h = createHarness(t);
   h.world.setActive(true);
   for (const floor of [1, 2]) {
     h.world.setFloor(floor);
-    const mentors = h.world.actors.filter(actor => actor.kind === 'mentor');
-    assert.equal(mentors.length, 3);
-    assert.deepEqual(mentors.map(actor => actor.object.x), [105, 175, 245]);
+    const mentors = h.world.actors.filter(actor => actor.kind === 'mentor' && actor.object.floor === floor);
+    assert.equal(mentors.length, floor === 1 ? 3 : 2);
+    assert.deepEqual(mentors.map(actor => actor.object.x), floor === 1 ? [105, 175, 245] : [105, 175]);
     assert.ok(mentors.every(actor => actor.object.y === 566 && actor.object.seated && actor.state === 'home'));
-    assert.ok(mentors.every(actor => actor.wait >= 5 && actor.wait <= 10));
-    assert.ok(mentors.every(actor => actor.speed >= 45 && actor.speed <= 65));
-    assert.equal(new Set(mentors.map(actor => actor.object.idlePhase)).size, 3);
-    const chair = h.world.layout.objects.find(object => object.id === `floor-${floor}-west-1-chair-0-9`);
-    const kayode = h.world.layout.objects.find(object => object.name === 'Kayode, the male rep');
-    assert.equal(chair.occupantId, kayode.id);
-    assert.equal(chair.action, 'Talk to Kayode');
-    assert.match(chair.label, /occupied by Kayode/);
-    assert.equal(kayode.seated, true);
-    assert.equal(kayode.x, chair.x);
-    assert.equal(kayode.y, chair.y + 6);
-    assert.equal(kayode.direction, chair.facing);
-    assert.equal(kayode.tableId, chair.tableId);
-    assert.equal(h.world.interact(chair), false);
-    h.pointer('pointerdown', chair.x, chair.y);
-    assert.equal(h.selections.at(-1).id, kayode.id);
-    h.world.clearSelection();
-    const position = { x: kayode.x, y: kayode.y };
-    for (let i = 0; i < 220; i++) h.world._updateActors(0.05);
-    assert.equal(kayode.x, position.x);
-    assert.equal(kayode.y, position.y);
-    assert.equal(kayode.seated, true);
+    assert.ok(mentors.every(actor => actor.wait >= actor.schedule.seated[0] && actor.wait <= actor.schedule.seated[1]));
+    assert.equal(new Set(mentors.map(actor => actor.object.idlePhase)).size, mentors.length);
   }
+  h.world.setFloor(1);
+  const chair = h.world.layout.objects.find(object => object.id === 'floor-1-west-1-chair-0-9');
+  const kayode = h.world.layout.objects.find(object => object.name === 'Kayode, the male rep');
+  assert.equal(chair.occupantId, kayode.id);
+  assert.equal(chair.action, 'Talk to Kayode');
+  assert.match(chair.label, /occupied by Kayode/);
+  assert.equal(kayode.seated, true);
+  assert.equal(kayode.x, chair.x);
+  assert.equal(kayode.y, chair.y + 6);
+  assert.equal(kayode.direction, chair.facing);
+  assert.equal(kayode.tableId, chair.tableId);
+  assert.equal(h.world.interact(chair), false);
+  h.pointer('pointerdown', chair.x, chair.y);
+  assert.equal(h.selections.at(-1).id, kayode.id);
+  h.world.clearSelection();
+  const position = { x: kayode.x, y: kayode.y };
+  h.world.setFloor(2);
+  const upstairsChair = h.world.layout.objects.find(object => object.id === 'floor-2-west-1-chair-0-9');
+  assert.equal(upstairsChair.occupantId, undefined);
+  assert.ok(h.world.interact(upstairsChair));
+  for (let i = 0; i < 220; i++) h.world._updateActors(0.05);
+  h.world.setFloor(1);
+  assert.equal(h.world.layout.objects.find(object => object.id === kayode.id), kayode);
+  assert.deepEqual({ x: kayode.x, y: kayode.y }, position);
+  assert.equal(kayode.seated, true);
 });
 
 test('mentor inspection/return routes and manager roaming stay collision-free and do not pan the camera', t => {
@@ -933,7 +942,7 @@ test('mentor inspection/return routes and manager roaming stay collision-free an
   };
   finishRoute();
   assert.equal(actor.state, 'inspect');
-  assert.ok(actor.wait >= 2 && actor.wait <= 5);
+  assert.ok(actor.wait >= actor.schedule.inspect[0] && actor.wait <= actor.schedule.inspect[1]);
   actor.wait = 0;
   h.world._updateActors(0.05);
   assert.equal(actor.state, 'returning');
@@ -942,7 +951,7 @@ test('mentor inspection/return routes and manager roaming stay collision-free an
   assert.equal(actor.object.seated, true);
   assert.equal(actor.object.x, actor.home.x);
   assert.equal(actor.object.y, actor.home.y);
-  assert.ok(actor.wait >= 8 && actor.wait <= 15);
+  assert.ok(actor.wait >= actor.schedule.seated[0] && actor.wait <= actor.schedule.seated[1]);
   const manager = h.world.actors.find(person => person.kind === 'manager');
   manager.path = [];
   manager.state = 'pause';
@@ -1032,4 +1041,293 @@ test('reduced motion fixes foliage and idle poses, leaves sway no more than one 
   assert.equal(h.win.motionQuery.listenerCount, 1);
   h.world.destroy();
   assert.equal(h.win.motionQuery.listenerCount, 0);
+});
+
+function assertUniqueActors(world) {
+  const residents = [...world.floors.values()].flatMap(context => context.layout.objects.filter(object => object.type === 'npc'));
+  assert.equal(residents.length, 7);
+  assert.equal(new Set(residents.map(object => object.id)).size, 7);
+  assert.equal(new Set(residents.map(object => object.name)).size, 7);
+  for (const actor of world.actors) {
+    assert.equal(residents.filter(object => object === actor.object).length, 1);
+    assert.ok(world.floors.get(actor.object.floor).layout.objects.includes(actor.object));
+  }
+}
+
+function finishActorRoute(world, actor) {
+  assertSafeRoute(world, actor.object, actor.path);
+  for (let i = 0; i < 3000 && actor.path.length; i++) {
+    world._updateActors(0.05);
+    world.actors.forEach(person => assertCollisionFree(world, person.object));
+  }
+  assert.equal(actor.path.length, 0, 'Actor completes its route');
+  assertUniqueActors(world);
+}
+
+test('floor switching preserves actor identity, position, route, schedule and ambient time', t => {
+  const { world } = createHarness(t);
+  const actors = world.actors;
+  const actor = actors[0];
+  const layout = world.layout;
+  actor.wait = 0;
+  world._updateActors(0.05);
+  world._updateActors(0.5);
+  world.ambientTime = 1234;
+  const snapshot = structuredClone(actor);
+  const path = actor.path;
+  for (const floor of [2, 1, 1, 2, 1]) world.setFloor(floor);
+  assert.equal(world.actors, actors);
+  assert.equal(world.layout, layout);
+  assert.equal(world.actors[0], actor);
+  assert.equal(actor.path, path);
+  assert.deepEqual(actor, snapshot);
+  assert.equal(world.ambientTime, 1234);
+  assert.equal(actor.object.id, 'floor-1-npc-1');
+  assertUniqueActors(world);
+});
+
+test('active frames simulate unseen floors, while inactive worlds pause both floors', t => {
+  const h = createHarness(t);
+  const emmanuel = h.world.actors.find(actor => actor.object.name === 'Mr Emmanuel');
+  emmanuel.wait = 0;
+  h.world.setActive(true);
+  h.frame();
+  h.frame();
+  assert.equal(h.world.floor, 1);
+  assert.equal(emmanuel.state, 'outbound');
+  assertSafeRoute(h.world, emmanuel.object, emmanuel.path);
+  const before = { x: emmanuel.object.x, y: emmanuel.object.y };
+  for (let i = 0; i < 20; i++) h.frame();
+  assert.ok(emmanuel.object.x !== before.x || emmanuel.object.y !== before.y);
+  const snapshot = structuredClone(h.world.actors);
+  h.world.setActive(false);
+  for (let i = 0; i < 20; i++) h.frame();
+  assert.deepEqual(h.world.actors, snapshot);
+  h.world.setFloor(2);
+  assert.equal(h.world.layout.objects.find(object => object.id === emmanuel.object.id), emmanuel.object);
+});
+
+test('individual schedules keep Jonathan mostly seated and Femi more active', t => {
+  let seed = 42;
+  t.mock.method(Math, 'random', () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; });
+  const { world } = createHarness(t);
+  const jonathan = world.actors.find(actor => actor.object.name === 'Mr Jonathan');
+  const femi = world.actors.find(actor => actor.object.name === 'Mr Femi');
+  assert.ok(jonathan.schedule.seated[0] > femi.schedule.seated[1] * 2);
+  assert.ok(femi.speed > jonathan.speed);
+  assert.ok(femi.schedule.stops > jonathan.schedule.stops);
+  assert.ok(femi.schedule.transferEvery < jonathan.schedule.transferEvery);
+  for (let i = 0; i < 920; i++) world._updateActors(0.05);
+  assert.equal(jonathan.state, 'home');
+  assert.equal(jonathan.object.seated, true);
+  assert.equal(femi.object.seated, false);
+  assert.equal(femi.outings, 1);
+  const seated = new Map([[jonathan, 0], [femi, 0]]);
+  for (let i = 0; i < 3600; i++) {
+    world._updateActors(0.25);
+    for (const actor of seated.keys()) if (actor.object.seated) seated.set(actor, seated.get(actor) + 1);
+  }
+  assert.ok(seated.get(jonathan) > 1800, 'Jonathan sits for most of the simulation');
+  assert.ok(seated.get(jonathan) > seated.get(femi), 'Femi spends more time on rounds');
+  assert.ok(femi.outings > jonathan.outings);
+  assertUniqueActors(world);
+});
+
+test('every mentor transfers only at the stairs, stays unique, visits and returns to their own home', t => {
+  for (const name of ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Mr Emmanuel', 'Mr Itunu']) {
+    const { world } = createHarness(t, { camera: true });
+    world.setActive(true);
+    const actor = world.actors.find(actor => actor.object.name === name);
+    // Exercise a scheduled cross-floor outing without waiting several minutes.
+    actor.outings = actor.schedule.transferEvery - 1;
+    actor.wait = 0;
+    const id = actor.object.id;
+    const source = world.floors.get(actor.homeFloor).layout;
+    const destinationFloor = actor.homeFloor === 1 ? 2 : 1;
+    const camera = world.getCamera();
+    const player = { ...world.player };
+    world._updateActors(0.05);
+    assert.equal(actor.state, 'transferring');
+    assert.equal(actor.object.floor, actor.homeFloor);
+    assert.equal(actor.destination.targetFloor, destinationFloor);
+    assert.deepEqual(actor.path.at(-1), { x: 515, y: 555 });
+    assertSafeRoute(world, actor.object, actor.path);
+    world._updateActors(0.05);
+    assert.equal(actor.object.floor, actor.homeFloor, 'No teleport at route departure');
+    finishActorRoute(world, actor);
+    assert.equal(actor.object.floor, destinationFloor);
+    assert.equal(actor.object.id, id);
+    assert.equal(source.objects.includes(actor.object), false);
+    assert.equal(actor.state, 'visit');
+    assert.deepEqual({ x: actor.object.x, y: actor.object.y }, { x: 515, y: 555 });
+    assert.deepEqual(world.getCamera(), camera);
+    assert.deepEqual(world.player, player);
+    world.setFloor(actor.homeFloor);
+    assert.equal(world.interact(id), false);
+    if (actor.object.name === 'Mr Jonathan' || actor.object.name === 'Mr Emmanuel') {
+      const corner = source.objects.find(object => object.type === 'mentor');
+      assert.equal(world.interact(corner), false, 'Absent mentors cannot be summoned by their corner');
+      assert.equal(world._hit({ x: corner.x, y: corner.y }), null);
+      assert.equal(corner.name, actor.object.name);
+      assert.match(corner.label, /mentor corner/);
+      world.selected = corner; // A destination menu may still hold the cubicle entry.
+      assert.equal(world.interact(corner), false);
+      assert.equal(world.pending, null);
+      assert.equal(world.path.length, 0);
+    }
+    world.setFloor(destinationFloor);
+    assert.ok(world.interact(id), 'Stable ID resolves on the destination floor');
+    world.path = [];
+    world.pending = null;
+    world.clearSelection();
+    for (let stop = 0; stop < actor.schedule.stops; stop++) {
+      actor.wait = 0;
+      world._updateActors(0.05);
+      assert.equal(actor.state, 'outbound');
+      assert.ok(actor.destination.tableId.startsWith(`floor-${destinationFloor}-`));
+      finishActorRoute(world, actor);
+      assert.equal(actor.state, 'inspect');
+      assert.equal(actor.object.seated, false, 'Visitors do not take another mentor’s home seat');
+    }
+    actor.wait = 0;
+    world._updateActors(0.05);
+    assert.equal(actor.state, 'transferring');
+    assert.equal(actor.destination.targetFloor, actor.homeFloor);
+    finishActorRoute(world, actor);
+    assert.equal(actor.object.floor, actor.homeFloor);
+    assert.equal(actor.state, 'home');
+    assert.equal(actor.object.seated, true);
+    assert.equal(actor.object.x, actor.home.x);
+    assert.equal(actor.object.y, actor.home.y);
+    assert.ok(actor.wait >= actor.schedule.seated[0] && actor.wait <= actor.schedule.seated[1]);
+  }
+});
+
+test('new mentors have distinct appearances, dialogue and behavior and reachable conversations', t => {
+  const { world } = createHarness(t, { reducedMotion: true });
+  world.setFloor(2);
+  const emmanuel = world.actors.find(actor => actor.object.name === 'Mr Emmanuel');
+  const itunu = world.actors.find(actor => actor.object.name === 'Mr Itunu');
+  assert.equal(emmanuel.object.profile.hair, '#e6ded0');
+  assert.equal(emmanuel.object.profile.wearId, 'glasses');
+  assert.equal(itunu.object.profile.wearId, 'headphones');
+  assert.notEqual(emmanuel.object.profile.skin, itunu.object.profile.skin);
+  assert.notEqual(emmanuel.object.profile.shirt, itunu.object.profile.shirt);
+  assert.ok(emmanuel.schedule.seated[0] > itunu.schedule.seated[1]);
+  assert.ok(emmanuel.schedule.inspect[0] > itunu.schedule.inspect[1]);
+  assert.ok(itunu.schedule.stops > emmanuel.schedule.stops);
+  for (const actor of [emmanuel, itunu]) {
+    assert.equal(actor.object.profile.name, actor.object.name);
+    assert.ok(NPC_LINES[actor.object.name].length >= 3);
+    assert.ok(world.interact(actor.object));
+    assertSafeRoute(world);
+    world.pending = null;
+    world.path = [];
+    world.clearSelection();
+    actor.wait = 0;
+    world._updateActors(0.05);
+    finishActorRoute(world, actor);
+    assert.ok(world.interact(actor.object));
+    assertSafeRoute(world);
+    world.pending = null;
+    world.path = [];
+    world.clearSelection();
+  }
+  assert.equal(new Set(Object.values(NPC_LINES).flat()).size, Object.values(NPC_LINES).flat().length);
+});
+
+
+test('offscreen routes use their own navigation and failed departures do not advance schedules', t => {
+  const { world } = createHarness(t);
+  const actor = world.actors.find(actor => actor.object.name === 'Mr Emmanuel');
+  const { blocked } = world.floors.get(2);
+  const destination = { x: 345, y: 375 };
+  const cell = Math.floor(destination.y / 10) * 132 + Math.floor(destination.x / 10);
+  assert.equal(world.blocked[cell], 0);
+  blocked[cell] = 1;
+  assert.ok(world._startActorRoute(actor, destination, 'outbound'));
+  assert.notDeepEqual(actor.path.at(-1), destination, 'Offscreen destination snaps using floor two navigation');
+  for (const point of actor.path) {
+    assert.equal(blocked[Math.floor(point.y / 10) * 132 + Math.floor(point.x / 10)], 0);
+  }
+  assertSafeRoute(world, actor.object, actor.path);
+  finishActorRoute(world, actor);
+  actor.wait = 0;
+  actor.stopsRemaining = 1;
+  const navigation = blocked.slice();
+  blocked.fill(1);
+  const before = { state: actor.state, outings: actor.outings, stopsRemaining: actor.stopsRemaining, lastTableId: actor.lastTableId };
+  world._updateActors(0.05);
+  assert.deepEqual({ state: actor.state, outings: actor.outings, stopsRemaining: actor.stopsRemaining, lastTableId: actor.lastTableId }, before);
+  assert.equal(actor.path.length, 0);
+  assert.equal(actor.wait, 2);
+  blocked.set(navigation);
+  actor.wait = 0;
+  world._updateActors(0.05);
+  assert.equal(actor.state, 'returning');
+  finishActorRoute(world, actor);
+  assert.equal(actor.state, 'home');
+});
+
+
+test('onObjectsChange publishes unique active-floor snapshots once per mentor departure and arrival', t => {
+  for (const floor of [1, 2]) {
+    const changes = [];
+    const { world } = createHarness(t, { onObjectsChange: objects => changes.push(objects) });
+    world.setFloor(floor);
+    const actor = world.actors.find(actor => actor.object.name === 'Mr Jonathan');
+    const initialCount = world.layout.objects.filter(object => object.type === 'npc').length;
+    assert.equal(changes.length, 0, 'Floor selection remains handled by the consumer');
+    actor.outings = actor.schedule.transferEvery - 1;
+    actor.wait = 0;
+    world._updateActors(0.05);
+    assert.equal(changes.length, 0, 'Route departure does not yet change floor membership');
+    finishActorRoute(world, actor);
+    assert.equal(changes.length, 1);
+    const first = changes[0];
+    assert.notEqual(first, world.layout.objects, 'A new array triggers consumer state updates');
+    assert.deepEqual(first, world.layout.objects);
+    assert.ok(first.every(object => object.floor === floor));
+    assert.equal(new Set(first.map(object => object.id)).size, first.length);
+    assert.equal(first.filter(object => object.type === 'npc').length, initialCount + (floor === 1 ? -1 : 1));
+    assert.equal(first.filter(object => object.id === actor.object.id).length, floor === 1 ? 0 : 1);
+    first.forEach((object, index) => assert.equal(object, world.layout.objects[index], 'Objects retain their live identity'));
+    const firstIds = first.map(object => object.id);
+    world._updateActors(0.05);
+    assert.equal(changes.length, 1, 'Normal simulation does not emit membership updates');
+    // The visiting mentor is still at the stairs; return through the same transfer path.
+    assert.ok(world._startActorRoute(actor, world._stairsDestination(actor), 'transferring'));
+    finishActorRoute(world, actor);
+    assert.equal(changes.length, 2);
+    const second = changes[1];
+    assert.notEqual(second, first);
+    assert.notEqual(second, world.layout.objects);
+    assert.deepEqual(second, world.layout.objects);
+    assert.ok(second.every(object => object.floor === floor));
+    assert.equal(new Set(second.map(object => object.id)).size, second.length);
+    assert.equal(second.filter(object => object.type === 'npc').length, initialCount);
+    assert.equal(second.filter(object => object.id === actor.object.id).length, floor === 1 ? 1 : 0);
+    assert.deepEqual(first.map(object => object.id), firstIds, 'Earlier arrays retain their membership');
+    const count = world.layout.objects.length;
+    second.pop();
+    assert.equal(world.layout.objects.length, count, 'Consumer array edits cannot corrupt the layout');
+    world.destroy();
+    assert.equal(world.onObjectsChange, null);
+    world.setFloor(1);
+    world.setActive(true);
+    assert.equal(changes.length, 2, 'Destroy releases the callback without publishing more updates');
+  }
+});
+
+test('onObjectsChange accepts only functions and remains optional during transfers', t => {
+  for (const onObjectsChange of [undefined, null, true, 'not a callback']) {
+    const { world } = createHarness(t, { onObjectsChange });
+    assert.equal(world.onObjectsChange, null);
+    const actor = world.actors[0];
+    actor.outings = actor.schedule.transferEvery - 1;
+    actor.wait = 0;
+    world._updateActors(0.05);
+    finishActorRoute(world, actor);
+    assert.equal(actor.object.floor, 2);
+  }
 });

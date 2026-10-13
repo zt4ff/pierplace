@@ -61,11 +61,11 @@ export default function Landing({ admitted, profile, onStart, onEnter, onHelp })
             <div className="preview-frame">
               <div className="preview-toolbar" aria-hidden="true">
                 <span className="preview-dots"><i /><i /><i /></span>
-                <span>pierplace / your next chapter</span>
+                <span>Fella / your next chapter</span>
                 <Sparkles size={14} />
               </div>
               <canvas ref={canvasRef} width={1320} height={700} role="img" aria-label="A cozy pixel-art campus with shared tables, quiet desks, beanbags, and people learning together">
-                A pixel-art preview of the PierPlace campus, with places to learn, meet, and relax.
+                A pixel-art preview of the Fella campus, with places to learn, meet, and relax.
               </canvas>
             </div>
             <figcaption className="preview-caption"><span className="status-dot" /> Your people are somewhere in here.</figcaption>
@@ -93,7 +93,7 @@ export default function Landing({ admitted, profile, onStart, onEnter, onHelp })
 
       <footer className="site-footer">
         <p><Leaf size={15} aria-hidden="true" /> Made for curious minds and kind hearts.</p>
-        <span>PierPlace · A place to begin.</span>
+        <span>Fella · A place to begin.</span>
         <button className="text-button" type="button" onClick={onHelp}>Need a hand? <ArrowRight size={14} aria-hidden="true" /></button>
       </footer>
     </div>
