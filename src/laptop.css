@@ -84,9 +84,10 @@
     flex: 1;
     min-height: 0;
     padding: 18px 18px 18px 76px;
-    background:
-        radial-gradient(ellipse at 90% 12%, #84407066, transparent 60%),
-        linear-gradient(135deg, #241735, #48234f 60%, #6b354d);
+    background-color: #241735;
+    background-image: url("/wallpaper.png");
+    background-size: cover;
+    background-position: center;
 }
 .laptop-hardware-popup .ubuntu-dock {
     width: 56px;

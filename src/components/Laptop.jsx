@@ -31,11 +31,11 @@ const DESKTOP_APPS = [
   { id: "editor", title: "Code editor", Icon: Code2, color: "#b7decf" },
   { id: "music", title: "Music", Icon: Headphones, color: "#f3d98b" },
 ];
-const NOTES_KEY = "Fella.laptop.notes.v1";
+const NOTES_KEY = "PierPlace.laptop.notes.v1";
 const WELCOME_TEXT =
-  "Welcome to Fella!\nLearn a little, take a note, and share an idea with someone at your table.\nYour learning progress is managed by Fella; notes stay on this device.";
+  "Welcome to PierPlace!\nLearn a little, take a note, and share an idea with someone at your table.\nYour learning progress is managed by PierPlace; notes stay on this device.";
 const TERMINAL_GREETING =
-  "Fella simulated terminal — no real shell or system access.\nType help to see the available commands.";
+  "PierPlace simulated terminal — no real shell or system access.\nType help to see the available commands.";
 const APPS = [
   { id: "learning", title: "Learning", Icon: BookOpen, color: "#e7ad75" },
   { id: "notes", title: "Notes", Icon: StickyNote, color: "#f3d98b" },
@@ -149,7 +149,7 @@ function LessonContent({ id }) {
         <pre className="laptop-code-example">
           <code>
             {
-              '<h1>Hello, Fella!</h1>\n<p>One small step today.</p>\n<button type="button">Say hello</button>\n\n/* CSS */\nbutton {\n  background: #285c50;\n  color: white;\n  padding: 12px 20px;\n}'
+              '<h1>Hello, PierPlace!</h1>\n<p>One small step today.</p>\n<button type="button">Say hello</button>\n\n/* CSS */\nbutton {\n  background: #285c50;\n  color: white;\n  padding: 12px 20px;\n}'
             }
           </code>
         </pre>
@@ -289,7 +289,7 @@ export default function Laptop({
     const responses = {
       help: "Simulated commands (case-sensitive):\nhelp             Show this guide\nls               List learning resources\npwd              Show the mock folder\nwhoami           Show your campus name\nclear            Clear this display\ndate             Show your device’s current date\ncat welcome.txt  Read the welcome note\n\nNo real commands, scripts, or system changes are executed.",
       ls: LESSONS.map((lesson) => lesson.file).join("\n"),
-      pwd: "/home/learner/Fella/resources (simulated)",
+      pwd: "/home/learner/PierPlace/resources (simulated)",
       whoami: name,
       date: new Date().toLocaleString(),
       "cat welcome.txt": WELCOME_TEXT,
@@ -298,7 +298,7 @@ export default function Laptop({
       ? responses[input]
       : "Unknown simulated command. Type help for supported commands; nothing was executed.";
     setTranscript((previous) =>
-      `${previous}${previous ? "\n\n" : ""}learner@Fella:~$ ${input}\n${result}`.slice(
+      `${previous}${previous ? "\n\n" : ""}learner@PierPlace:~$ ${input}\n${result}`.slice(
         -24000,
       ),
     );
@@ -396,7 +396,7 @@ export default function Laptop({
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <activeApp.Icon size={15} aria-hidden="true" />
-                    {activeApp.title} · Fella
+                    {activeApp.title} · PierPlace
                   </span>
                   <button
                     type="button"
@@ -590,11 +590,6 @@ export default function Laptop({
                   padding: 20,
                 }}
               >
-                <h2>Ubuntu.</h2>
-                <p style={{ marginTop: 10 }}>
-                  Open Browser, Code editor, or Music, or choose an app in the
-                  dock.
-                </p>
               </div>
             )}
           </div>

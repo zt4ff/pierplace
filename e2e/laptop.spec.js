@@ -5,7 +5,7 @@ async function openLaptop(page) {
   await page.addInitScript(
     (profile) =>
       localStorage.setItem(
-        "Fella.v1",
+        "PierPlace.v1",
         JSON.stringify({
           profile,
           floor: 1,
@@ -50,7 +50,7 @@ for (const viewport of [
     ).toHaveCount(3);
     await page.getByRole("button", { name: "Browser", exact: true }).click();
     await expect(page.getByLabel("Website address")).toHaveValue(
-      "Fella://home",
+      "PierPlace://home",
     );
     await page.getByLabel("Website address").fill("javascript:alert(1)");
     await page.getByRole("button", { name: "Go to website" }).click();
@@ -108,7 +108,7 @@ test("Monaco loads locally, edits code, switches languages and persists across r
   await expect
     .poll(() =>
       page.evaluate(() =>
-        JSON.parse(localStorage.getItem("Fella.laptop.code.v1")),
+        JSON.parse(localStorage.getItem("PierPlace.laptop.code.v1")),
       ),
     )
     .toEqual({ code: "<h1>Hello from Monaco</h1>", language: "javascript" });

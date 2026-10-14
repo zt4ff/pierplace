@@ -1,4 +1,4 @@
-# Fella
+# PierPlace
 
 A cozy pixel-art learning world built with React, Vite, Lucide icons, and a browser-based MSW mock API. The floor layout is based on `building.png`.
 

@@ -742,7 +742,7 @@ function drawArchitecture(ctx, floor, { plants = true } = {}) {
   text(ctx, "QUIET NOOK", 519, 163, 9, "#7a8072");
   text(
     ctx,
-    `Fella / ${floor === 1 ? "GROUND FLOOR" : "UPPER FLOOR"}`,
+    `PierPlace / ${floor === 1 ? "GROUND FLOOR" : "UPPER FLOOR"}`,
     174,
     653,
     10,

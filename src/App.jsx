@@ -21,7 +21,7 @@ import { api } from "./api.js";
 function Help({ onClose, inCampus = false }) {
   return (
     <Modal
-      title="Welcome to Fella"
+      title="Welcome to PierPlace"
       presentation={inCampus ? "floating" : "modal"}
       className={inCampus ? "help-popup" : ""}
       onClose={onClose}
@@ -146,7 +146,7 @@ export default function App() {
         ? "Your pass is ready. Device storage is unavailable; this visit won’t persist."
         : editing
           ? "A little more you. Your campus profile is saved."
-          : `Welcome to Fella, ${profile.name}. Your seat is waiting.`,
+          : `Welcome to PierPlace, ${profile.name}. Your seat is waiting.`,
     );
   }
   function changeFloor(floor) {

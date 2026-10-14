@@ -174,7 +174,7 @@ export function IdCard({ profile }) {
         <div className="id-details">
           <span>CURIOUS MIND / LIFELONG LEARNER</span>
           <h3>{profile.name || "Your name here"}</h3>
-          <p>Member of the Fella community</p>
+          <p>Member of the PierPlace community</p>
           <strong>ALL FLOORS · ALL POSSIBILITIES</strong>
         </div>
       </div>

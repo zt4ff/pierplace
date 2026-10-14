@@ -204,7 +204,7 @@ export default function Onboarding({ initialProfile, editing = false, onComplete
       {saveError && <p className="test-feedback error" role="alert">{saveError}</p>}
     {!success && <>
       <header className="modal-header">
-        <p className="eyebrow"><Sparkles size={15} aria-hidden="true" /> {editing ? 'Your campus profile' : 'Welcome to Fella'}</p>
+        <p className="eyebrow"><Sparkles size={15} aria-hidden="true" /> {editing ? 'Your campus profile' : 'Welcome to PierPlace'}</p>
         <h2 ref={heading} tabIndex={-1}>{title}</h2>
         <p>{step === 0 ? 'Pick your colors and a name. There’s no right way to be you.' : step === 1 ? 'A campus ID, made yours. A real photo is entirely optional.' : 'Three small visual puzzles. Take your time—there’s no timer, and you can try again.'}</p>
       </header>

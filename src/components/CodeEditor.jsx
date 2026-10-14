@@ -9,8 +9,8 @@ import { PythonRunner } from "../python/runner.js";
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 loader.config({ monaco });
 
-const STORAGE_KEY = "Fella.laptop.python.v1";
-const LEGACY_KEY = "Fella.laptop.code.v1";
+const STORAGE_KEY = "PierPlace.laptop.python.v1";
+const LEGACY_KEY = "PierPlace.laptop.code.v1";
 const STARTER =
   'print("Hello, Python!")\n';
 function readDocument() {

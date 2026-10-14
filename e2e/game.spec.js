@@ -9,7 +9,7 @@ async function returningMember(page, floor = 1) {
   await page.addInitScript(
     ({ profile, floor }) =>
       localStorage.setItem(
-        "Fella.v1",
+        "PierPlace.v1",
         JSON.stringify({
           profile,
           floor,
@@ -87,7 +87,7 @@ test("welcome → character and photo ID → visual test → campus; progress pe
   ).toBeVisible();
   await page.screenshot({ path: "screenshots/campus.png", fullPage: true });
   const saved = await page.evaluate(() =>
-    JSON.parse(localStorage.getItem("Fella.v1")),
+    JSON.parse(localStorage.getItem("PierPlace.v1")),
   );
   expect(saved.admitted).toBe(true);
   expect(saved.profile.wearId).toBe(false);
@@ -174,7 +174,7 @@ test("Ubuntu laptop opens functional lessons, notes, terminal and files", async 
   await expect
     .poll(() =>
       page.evaluate(
-        () => JSON.parse(localStorage.getItem("Fella.v1")).lessons,
+        () => JSON.parse(localStorage.getItem("PierPlace.v1")).lessons,
       ),
     )
     .toContain("welcome");
@@ -182,7 +182,7 @@ test("Ubuntu laptop opens functional lessons, notes, terminal and files", async 
   await page.locator("textarea").fill("Build a little world.");
   await expect
     .poll(() =>
-      page.evaluate(() => localStorage.getItem("Fella.laptop.notes.v1")),
+      page.evaluate(() => localStorage.getItem("PierPlace.laptop.notes.v1")),
     )
     .toBe("Build a little world.");
   await page

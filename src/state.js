@@ -71,7 +71,7 @@ export const NPC_LINES = {
     "Got an idea for the community? I’m all ears.",
   ],
 };
-const KEY = "Fella.v1";
+const KEY = "PierPlace.v1";
 export function freshState() {
   return {
     profile: { ...DEFAULT_PROFILE },

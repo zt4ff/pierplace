@@ -1,4 +1,4 @@
-Design a game for me called Fella. It's a 2d virtual world game. This is the format.
+Design a game for me called PierPlace. It's a 2d virtual world game. This is the format.
 
 When you open the web app, you see the simple game screen. Image in gamescreen.png, you click take test, then it takes you to the test page.
 
