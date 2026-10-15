@@ -41,7 +41,8 @@
 asyncpg in `app/core/config.py`) + 4 config tests + README deploy section.
 **Why:** Issue #1 (Initialize postgres with Render) + FastAPI on Render.
 **Verify:** 9 passed; YAML parses; app boots with a `postgres://` URL.
-**Know:** Seed once via Render Shell after first deploy. Schema impact: none
+**Know:** Seeding is automatic via `preDeployCommand` (idempotent seed runs on
+every deploy); Shell only for manual verify/reseed. Schema impact: none
 (new files + additive validator only). Free-plan DB sleeps when idle.
 
 ## 2026-10-15 — claude-opus-5 (backend agent): PR #10 opened, live-verified
