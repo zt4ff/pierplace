@@ -1,475 +1,500 @@
 .laptop-hardware-popup,
 .floating-panel.laptop-hardware-popup {
-    --paper: #29262e;
-    --muted: #c1bbc9;
-    --green: #b4d3b4;
-    position: fixed;
-    inset: 5dvh 5vw;
-    width: 90vw;
-    height: 90dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 14px;
-    background: #24262c;
-    box-shadow: 0 20px 70px #0008;
-    overflow: hidden;
-    color: #f0edf3;
-    z-index: 100;
+	--paper: #29262e;
+	--muted: #c1bbc9;
+	--green: #b4d3b4;
+	position: fixed;
+	inset: 5dvh 5vw;
+	width: 90vw;
+	height: 90dvh;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 14px;
+	background: #24262c;
+	box-shadow: 0 20px 70px #0008;
+	overflow: hidden;
+	color: #f0edf3;
+	z-index: 100;
 }
 .laptop-hardware-popup > .modal-close {
-    position: absolute;
-    top: 3px;
-    right: 8px;
-    z-index: 2;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: #f5f5f7;
+	position: absolute;
+	top: 3px;
+	right: 8px;
+	z-index: 2;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	color: #f5f5f7;
 }
 .laptop-hardware-popup .laptop-shell {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    padding: 0 8px;
-    border: 1px solid #5a5e65;
-    border-radius: 14px;
-    background: linear-gradient(
-        115deg,
-        #34373d,
-        #1a1c21 25%,
-        #24262c 80%,
-        #41444a
-    );
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	padding: 0 8px;
+	border: 1px solid #5a5e65;
+	border-radius: 14px;
+	background: linear-gradient(
+		115deg,
+		#34373d,
+		#1a1c21 25%,
+		#24262c 80%,
+		#41444a
+	);
 }
 .laptop-camera-bar {
-    height: 30px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 7px;
+	height: 30px;
+	flex-shrink: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 7px;
 }
 .laptop-camera {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #050609;
-    box-shadow: 0 0 0 2px #393c43;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #050609;
+	box-shadow: 0 0 0 2px #393c43;
 }
 .laptop-camera-light {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: #829c87;
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: #829c87;
 }
 .laptop-hardware-popup .laptop-screen {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    border: 2px solid #090a0e;
-    color-scheme: dark;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	border: 2px solid #090a0e;
+	color-scheme: dark;
 }
 .laptop-hardware-popup .ubuntu-bar {
-    flex-shrink: 0;
-    min-height: 30px;
-    background: #17151e;
-    color: #eee8f4;
+	flex-shrink: 0;
+	min-height: 30px;
+	background: #17151e;
+	color: #eee8f4;
 }
 .laptop-hardware-popup .ubuntu-desktop {
-    flex: 1;
-    min-height: 0;
-    padding: 18px 18px 18px 76px;
-    background-color: #241735;
-    background-image: url("/wallpaper.png");
-    background-size: cover;
-    background-position: center;
+	flex: 1;
+	min-height: 0;
+	padding: 18px 18px 18px 76px;
+	background-color: #241735;
+	background-image: url("/wallpaper.png");
+	background-size: cover;
+	background-position: center;
 }
 .laptop-hardware-popup .ubuntu-dock {
-    width: 56px;
-    background: #17111f99;
+	width: 56px;
+	background: #17111f99;
 }
 .laptop-hardware-popup .desktop-window {
-    min-height: 0;
-    border-color: #62586b;
-    border-radius: 7px;
-    background: #29262e;
+	min-height: 0;
+	border-color: #62586b;
+	border-radius: 7px;
+	background: #29262e;
 }
 .laptop-hardware-popup .window-bar {
-    flex-shrink: 0;
-    min-height: 34px;
-    padding: 7px 12px;
-    border-color: #4a4254;
-    background: #35303d;
-    color: #e1dbe8;
+	flex-shrink: 0;
+	min-height: 34px;
+	padding: 7px 12px;
+	border-color: #4a4254;
+	background: #35303d;
+	color: #e1dbe8;
 }
 .laptop-hardware-popup .window-bar button {
-    background: #514957;
-    color: #f3eef7;
+	background: #514957;
+	color: #f3eef7;
 }
 .laptop-hardware-popup .window-bar button:hover {
-    background: #706178;
+	background: #706178;
 }
 .laptop-hardware-popup .learning-content {
-    min-height: 0;
-    overflow: auto;
-    padding: 22px;
+	min-height: 0;
+	overflow: auto;
+	padding: 22px;
 }
 .laptop-hardware-popup .learning-content h2 {
-    color: #f2eef7;
-    font-size: 24px;
+	color: #f2eef7;
+	font-size: 24px;
 }
 .laptop-hardware-popup .lesson-card {
-    padding: 13px;
-    background: #35313c;
-    border-color: #514b5b;
-    color: #eee8f4;
+	padding: 13px;
+	background: #35313c;
+	border-color: #514b5b;
+	color: #eee8f4;
 }
 .laptop-hardware-popup button.lesson-card:hover {
-    background: #423a4c;
-    border-color: #9983ac;
+	background: #423a4c;
+	border-color: #9983ac;
 }
 .laptop-hardware-popup .lesson-detail {
-    padding: 0 6px 12px;
+	padding: 0 6px 12px;
 }
 .laptop-hardware-popup .lesson-detail h3 {
-    color: #efe7f6;
+	color: #efe7f6;
 }
 .laptop-hardware-popup .text-button {
-    color: #c8ddc7;
+	color: #c8ddc7;
 }
 .laptop-hardware-popup .laptop-code-example {
-    padding: 14px;
-    border: 1px solid #53465e;
-    border-radius: 8px;
-    background: #1f1b26;
-    color: #e2d4ef;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+	padding: 14px;
+	border: 1px solid #53465e;
+	border-radius: 8px;
+	background: #1f1b26;
+	color: #e2d4ef;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 .laptop-hardware-popup .notes-editor {
-    min-height: 0;
-    background-color: #28232e;
-    color: #f2e9f7;
-    background-image: repeating-linear-gradient(
-        transparent 0,
-        transparent 24px,
-        #bba6cc12 24px,
-        #bba6cc12 25px
-    );
+	min-height: 0;
+	background-color: #28232e;
+	color: #f2e9f7;
+	background-image: repeating-linear-gradient(
+		transparent 0,
+		transparent 24px,
+		#bba6cc12 24px,
+		#bba6cc12 25px
+	);
 }
 .laptop-hardware-popup .notes-editor::placeholder {
-    color: #b7aabd;
+	color: #b7aabd;
 }
 .laptop-hardware-popup .terminal-output {
-    min-height: 0;
-    max-height: none;
-    background: #211b29;
+	min-height: 0;
+	max-height: none;
+	background: #211b29;
 }
 .laptop-hardware-popup .terminal-form {
-    flex-shrink: 0;
-    background: #211b29;
+	flex-shrink: 0;
+	background: #211b29;
 }
 .laptop-hardware-popup .desktop-window > p {
-    flex-shrink: 0;
-    color: #c1bbc9;
+	flex-shrink: 0;
+	color: #c1bbc9;
 }
 .laptop-bezel-brand {
-    height: 20px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    color: #a4a7ad;
-    font: 600 14px/1 sans-serif;
-    letter-spacing: 2.3px;
+	height: 20px;
+	flex-shrink: 0;
+	display: grid;
+	place-items: center;
+	color: #a4a7ad;
+	font: 600 14px/1 sans-serif;
+	letter-spacing: 2.3px;
 }
 .desktop-icons {
-    position: absolute;
-    top: 24px;
-    left: 80px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+	position: absolute;
+	top: 24px;
+	left: 80px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
 }
 .desktop-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 104px;
-    padding: 12px 4px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    background: transparent;
-    color: #fff;
-    font-size: 12px;
-    text-shadow: 0 2px 4px #0008;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	width: 104px;
+	padding: 12px 4px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: transparent;
+	color: #fff;
+	font-size: 12px;
+	text-shadow: 0 2px 4px #0008;
 }
 .desktop-icon span {
-    display: grid;
-    place-items: center;
-    width: 62px;
-    height: 62px;
-    border: 1px solid #ffffff25;
-    border-radius: 16px;
-    background: #ffffff12;
-    box-shadow: 0 4px 14px #0003;
+	display: grid;
+	place-items: center;
+	width: 62px;
+	height: 62px;
+	border: 1px solid #ffffff25;
+	border-radius: 16px;
+	background: #ffffff12;
+	box-shadow: 0 4px 14px #0003;
 }
 .desktop-icon:hover,
 .desktop-icon:focus-visible {
-    background: #ffffff15;
-    border-color: #ffffff40;
+	background: #ffffff15;
+	border-color: #ffffff40;
 }
 .browser-app,
 .code-editor-app {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
 }
 .browser-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-bottom: 1px solid #4a4254;
-    flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-bottom: 1px solid #4a4254;
+	flex-shrink: 0;
 }
 .browser-toolbar input {
-    flex: 1;
-    width: 0;
-    min-width: 0;
-    padding: 9px 12px;
-    border: 1px solid #62586b;
-    border-radius: 7px;
-    background: #211b29;
-    color: #f0edf3;
+	flex: 1;
+	width: 0;
+	min-width: 0;
+	padding: 9px 12px;
+	border: 1px solid #62586b;
+	border-radius: 7px;
+	background: #211b29;
+	color: #f0edf3;
 }
 .browser-toolbar button {
-    flex-shrink: 0;
-    color: #e1dbe8;
+	flex-shrink: 0;
+	color: #e1dbe8;
 }
 .browser-notice {
-    padding: 10px 16px;
-    font-size: 12px;
-    color: #c1bbc9;
-    overflow-wrap: anywhere;
+	padding: 10px 16px;
+	font-size: 12px;
+	color: #c1bbc9;
+	overflow-wrap: anywhere;
 }
 .browser-notice a {
-    color: #b7decf;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    text-decoration: underline;
+	color: #b7decf;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	text-decoration: underline;
 }
 .browser-page {
-    width: 100%;
-    flex: 1;
-    min-height: 0;
-    border: 0;
-    background: white;
+	width: 100%;
+	flex: 1;
+	min-height: 0;
+	border: 0;
+	background: white;
 }
 .browser-home {
-    max-width: 780px;
-    margin: auto;
+	max-width: 780px;
+	margin: auto;
 }
 .monaco-container {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
 }
 .editor-run-controls {
-    display: flex;
-    gap: 8px;
+	display: flex;
+	gap: 8px;
 }
 .laptop-hardware-popup .editor-run-controls button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    width: auto;
-    padding: 6px 10px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	width: auto;
+	padding: 6px 10px;
 }
 .code-editor-app .monaco-container {
-    flex: 1;
-    min-height: 100px;
+	flex: 1;
+	min-height: 100px;
 }
 .python-console {
-    display: flex;
-    flex-direction: column;
-    height: 28%;
-    min-height: 120px;
-    flex-shrink: 0;
-    border-top: 1px solid #4a4254;
+	display: flex;
+	flex-direction: column;
+	height: 28%;
+	min-height: 120px;
+	flex-shrink: 0;
+	border-top: 1px solid #4a4254;
 }
 .python-output {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 12px 16px;
-    background: #1e1e1e;
-    color: #d4d4d4;
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 12px 16px;
+	background: #1e1e1e;
+	color: #d4d4d4;
 }
 .python-output pre {
-    margin: 0;
-    font: 13px/1.5 monospace;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+	margin: 0;
+	font: 13px/1.5 monospace;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 .python-output p {
-    font-size: 12px;
-    color: #c1bbc9;
+	font-size: 12px;
+	color: #c1bbc9;
 }
 .python-output .python-error {
-    color: #f4a6a6;
+	color: #f4a6a6;
 }
 .python-input {
-    flex-shrink: 0;
-    padding: 8px 12px;
-    background: #29262e;
-    color: #c1bbc9;
-    font-size: 11px;
+	flex-shrink: 0;
+	padding: 8px 12px;
+	background: #29262e;
+	color: #c1bbc9;
+	font-size: 11px;
 }
 .python-input summary {
-    cursor: pointer;
+	cursor: pointer;
 }
 .python-input label {
-    display: block;
-    margin: 8px 0 5px;
+	display: block;
+	margin: 8px 0 5px;
 }
 .python-input textarea {
-    display: block;
-    width: 100%;
-    resize: none;
-    padding: 8px;
-    border: 1px solid #62586b;
-    border-radius: 5px;
-    background: #1e1e1e;
-    color: #f0edf3;
-    font: 12px/1.4 monospace;
+	display: block;
+	width: 100%;
+	resize: none;
+	padding: 8px;
+	border: 1px solid #62586b;
+	border-radius: 5px;
+	background: #1e1e1e;
+	color: #f0edf3;
+	font: 12px/1.4 monospace;
 }
 .laptop-hardware-popup .python-console .window-bar button {
-    width: auto;
-    padding: 5px 8px;
+	width: auto;
+	padding: 5px 8px;
 }
 @media (max-height: 600px) {
-    .code-editor-app {
-        overflow: auto;
-    }
-    .code-editor-app .monaco-container {
-        flex-shrink: 0;
-        min-height: 180px;
-    }
+	.code-editor-app {
+		overflow: auto;
+	}
+	.code-editor-app .monaco-container {
+		flex-shrink: 0;
+		min-height: 180px;
+	}
 }
 .editor-status {
-    flex-shrink: 0;
-    padding: 9px 12px;
-    font-size: 11px;
-    color: #c1bbc9;
-    background: #211b29;
+	flex-shrink: 0;
+	padding: 9px 12px;
+	font-size: 11px;
+	color: #c1bbc9;
+	background: #211b29;
 }
 .music-app {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 20px;
-    gap: 16px;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 20px;
+	gap: 16px;
 }
 .music-heading {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
 }
 .music-heading h2 {
-    font-size: 20px;
-    color: #f2eef7;
+	font-size: 20px;
+	color: #f2eef7;
 }
 .music-heading p {
-    margin-top: 4px;
-    color: #c1bbc9;
-    font-size: 12px;
+	margin-top: 4px;
+	color: #c1bbc9;
+	font-size: 12px;
 }
 .persistent-music-player {
-    position: fixed;
-    z-index: 101;
-    overflow: hidden;
-    border-radius: 8px;
-    background: #111;
+	position: fixed;
+	z-index: 101;
+	overflow: hidden;
+	border-radius: 8px;
+	background: #111;
 }
 .persistent-music-player iframe {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
 }
 .music-player {
-    width: 100%;
-    flex: 1;
-    min-height: 200px;
-    border: 0;
-    border-radius: 8px;
-    background: #111;
+	width: 100%;
+	flex: 1;
+	min-height: 200px;
+	border: 0;
+	border-radius: 8px;
+	background: #111;
 }
 .music-app .browser-notice {
-    padding: 0;
+	padding: 0;
 }
 @media (max-width: 640px) {
-    .laptop-hardware-popup .laptop-shell {
-        padding-inline: 4px;
-    }
-    .laptop-hardware-popup .ubuntu-desktop {
-        padding: 9px 7px 62px;
-    }
-    .laptop-hardware-popup .ubuntu-dock {
-        width: 100%;
-        height: 51px;
-        gap: 12px;
-    }
-    .laptop-hardware-popup .ubuntu-dock button {
-        width: 34px;
-        height: 34px;
-    }
-    .laptop-hardware-popup .ubuntu-bar {
-        padding-inline: 7px;
-    }
-    .laptop-hardware-popup .learning-content {
-        padding: 14px;
-    }
-    .laptop-hardware-popup .learning-content h2 {
-        font-size: 20px;
-    }
-    .laptop-hardware-popup .window-bar {
-        padding-inline: 9px;
-        font-size: 10px;
-    }
-    .desktop-icons {
-        left: 10px;
-        right: 10px;
-        top: 18px;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 4px;
-    }
-    .desktop-icon {
-        width: 100%;
-    }
-    .music-app {
-        padding: 12px;
-    }
-    .desktop-icons ~ div {
-        align-self: center;
-    }
-    .browser-toolbar {
-        gap: 4px;
-        padding-inline: 6px;
-    }
-    .editor-toolbar {
-        flex-wrap: wrap;
-    }
+	.laptop-hardware-popup .laptop-shell {
+		padding-inline: 4px;
+	}
+	.laptop-hardware-popup .ubuntu-desktop {
+		padding: 9px 7px 62px;
+	}
+	.laptop-hardware-popup .ubuntu-dock {
+		width: 100%;
+		height: 51px;
+		gap: 12px;
+	}
+	.laptop-hardware-popup .ubuntu-dock button {
+		width: 34px;
+		height: 34px;
+	}
+	.laptop-hardware-popup .ubuntu-bar {
+		padding-inline: 7px;
+	}
+	.laptop-hardware-popup .learning-content {
+		padding: 14px;
+	}
+	.laptop-hardware-popup .learning-content h2 {
+		font-size: 20px;
+	}
+	.laptop-hardware-popup .window-bar {
+		padding-inline: 9px;
+		font-size: 10px;
+	}
+	.desktop-icons {
+		left: 10px;
+		right: 10px;
+		top: 18px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 4px;
+	}
+	.desktop-icon {
+		width: 100%;
+	}
+	.music-app {
+		padding: 12px;
+	}
+	.desktop-icons ~ div {
+		align-self: center;
+	}
+	.browser-toolbar {
+		gap: 4px;
+		padding-inline: 6px;
+	}
+	.editor-toolbar {
+		flex-wrap: wrap;
+	}
+}
+
+/* --- PDF Viewer App Styles --- */
+.pdf-viewer-app {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	background: #1f1b26;
+}
+
+.pdf-viewer-app .pdf-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.pdf-viewer-app .pdf-frame {
+	width: 100%;
+	height: 100%;
+	flex: 1;
+	border: none;
+	background: #525659;
 }
