@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { connectPresence } from "../presence.js";
 import {
   ArrowDown,
   ArrowLeft,
@@ -151,6 +152,11 @@ export default function Campus({
   }
 
   useEffect(() => {
+    const presence = connectPresence({
+      profile: initialRef.current.profile,
+      floor: initialRef.current.floor,
+      onEvent: (msg) => callbacksRef.current.onPresence ? callbacksRef.current.onPresence(msg) : console.debug("[presence]", msg),
+    });
     const engine = new PixelWorld(canvasRef.current, {
       camera: true,
       onObjectsChange: (next) => setObjects(next),
@@ -171,6 +177,7 @@ export default function Campus({
       onMove: (next) => {
         const world = engineRef.current;
         if (!world) return;
+        presence.sendMove({ ...next, floor: world.floor });
         setPosition((previous) =>
           previous.seated === next.seated && previous.tableId === next.tableId
             ? previous
@@ -211,6 +218,7 @@ export default function Campus({
     };
     canvasRef.current.addEventListener("pointerup", clearFloorSelection);
     return () => {
+      presence.close();
       engine.canvas.removeEventListener("pointerup", clearFloorSelection);
       pendingActionRef.current = null;
       engineRef.current = null;
