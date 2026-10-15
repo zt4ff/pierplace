@@ -1,0 +1,23 @@
+# Render blueprint: managed Postgres + FastAPI web service.
+# Apply via the Render dashboard (New → Blueprint) pointed at this repo,
+# or `render blueprint launch`. Fulfills issue #1.
+databases:
+  - name: pierplace-db
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: pierplace-api
+    runtime: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pierplace-db
+          property: connectionString
+      - key: PIERPLACE_JWT_SECRET
+        generateValue: true

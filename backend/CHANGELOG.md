@@ -33,6 +33,17 @@
 
 ---
 
+## 2026-10-15 — claude-opus-5 (backend agent): Render deploy for issue #1
+
+**What:** `backend/render.yaml` blueprint (managed Postgres 16 + web service,
+`/health` check, generated JWT secret) + app reads Render's `DATABASE_URL`
+(fallback when `PIERPLACE_DATABASE_URL` unset; `postgres://` auto-upgraded to
+asyncpg in `app/core/config.py`) + 4 config tests + README deploy section.
+**Why:** Issue #1 (Initialize postgres with Render) + FastAPI on Render.
+**Verify:** 9 passed; YAML parses; app boots with a `postgres://` URL.
+**Know:** Seed once via Render Shell after first deploy. Schema impact: none
+(new files + additive validator only). Free-plan DB sleeps when idle.
+
 ## 2026-10-15 — claude-opus-5 (backend agent): PR #10 opened, live-verified
 
 **What:** Pushed branch `backend/piscine-contract` and opened PR #10 into
