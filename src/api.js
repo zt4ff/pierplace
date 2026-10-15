@@ -21,4 +21,23 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ text, playerId: identity.playerId, name: identity.name, skin: identity.skin, hair: identity.hair, shirt: identity.shirt }),
   }),
+  getQuestTasks: (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.week) query.set('week', params.week);
+    if (params.quest_number) query.set('quest_number', params.quest_number);
+    const q = query.toString();
+    return request(`/quests/tasks${q ? `?${q}` : ''}`);
+  },
+  trainProgress: name => request(`/quests/train/progress?name=${encodeURIComponent(name)}`),
+  submitTrainQuest: (taskId, code, identity = {}) => request('/quests/train/submit', {
+    method: 'POST',
+    body: JSON.stringify({
+      task_id: taskId,
+      code,
+      name: identity.name,
+      skin: identity.skin,
+      hair: identity.hair,
+      shirt: identity.shirt,
+    }),
+  }),
 };

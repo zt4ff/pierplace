@@ -83,7 +83,33 @@ async def seed():
                 s.add(EventTemplate(kind=kind, week_applies=weeks, offset_minutes=off,
                                     duration_minutes=dur, lock_type=lock, warn_minutes_before=2))
         await s.commit()
+    await seed_quest_tasks()
     print("seeded")
+
+
+async def seed_quest_tasks():
+    from .models.work import QuestTask
+
+    async with SessionLocal() as s:
+        if (await s.execute(select(QuestTask).limit(1))).scalar_one_or_none():
+            return
+        prompts = {
+            1: "Write a function that solves this basic problem. Example: return the sum of two numbers a and b.",
+            2: "Write code using control flow (if/else/loops) to solve this problem.",
+            3: "Write a function with proper logic to solve this problem.",
+        }
+        for quest_number, prompt in prompts.items():
+            for i in range(1, 6):
+                s.add(QuestTask(
+                    week=1,
+                    quest_number=quest_number,
+                    task_number=i,
+                    prompt=f"Quest {quest_number} Question {i}: {prompt}",
+                    tests={},
+                    xp_value=10,
+                    sort_order=i,
+                ))
+        await s.commit()
 
 
 if __name__ == "__main__":

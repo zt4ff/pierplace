@@ -40,7 +40,7 @@ npm run preview
 - The top-right profile button opens your ID. The bottom-left toolkit opens the laptop, table chat, and stand-up controls.
 - Select a chair or object to open an interaction popup next to it. Popups track objects and the camera; they hide when their target leaves the viewport.
 - Table chat is enabled after arriving at a table chair. Standing up or changing tables closes an open chat for the previous table.
-- Mentors have one persistent location across both floors and take the stairs independently of the player. Jonathan sits for 120–180 seconds between outings; Femi sits for 30–45 seconds, walks faster, and visits more tables and floors. Ezekiel has a slower, quieter routine. Mr Emmanuel and Mr Itunu start upstairs with their own schedules. The Facility Manager roams downstairs. Kayode sits at Collaboration table A, seat 9; that seat is reserved. NPC routines last for the current campus visit, not across page reloads.
+- Mentors have one persistent location across both floors and take the stairs independently of the player. Jonathan sits for 120–180 seconds between outings; Femi sits for 30–45 seconds, walks faster, and visits more tables and floors. Ezekiel has a slower, quieter routine. Mr Emmanuel starts upstairs with his own schedule. The Facility Manager roams downstairs. NPC routines last for the current campus visit, not across page reloads.
 - Characters have restrained, distinct idle animations; only plant leaves sway. Reduced-motion preferences disable decorative animation.
 - The laptop is screen-only, centered at 90% of the viewport width and height. Its Ubuntu desktop has three icons: **Browser**, **Code editor**, and **Music**. Lessons, notes, files, and a **simulated** terminal remain in the dock. Activities returns to the desktop.
 - Browser opens campus learning resources or HTTPS websites in a sandboxed frame. Sites that block embedding can be opened in a new tab. External browsing makes normal network requests; campus notes and code are not sent to those sites.
@@ -83,7 +83,7 @@ backend and persisted in PostgreSQL, scoped to a physical table.
 
 ## Manual review
 
-Try both floors, select objects near screen edges, pan away from the character, recenter, and watch a mentor complete an inspection and return home. Check Kayode's reserved seat, sitting/standing and chat gating, profile photo uploads, and all laptop apps. On a phone, verify tap-to-select versus drag-to-pan.
+Try both floors, select objects near screen edges, pan away from the character, recenter, and watch a mentor complete an inspection and return home. Check sitting/standing and chat gating, profile photo uploads, and all laptop apps. On a phone, verify tap-to-select versus drag-to-pan.
 
 Run state/API/world tests via `npm test`. Browser UI testing is currently manual; do not run Playwright during manual review.
 

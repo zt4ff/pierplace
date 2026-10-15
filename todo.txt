@@ -2,4 +2,8 @@
 - understand the frontend code in src
 - avoid e2e tests, I'd test myself henceforths
 - ignore any docker and build the app to run bare metal. 
-- remove Kayode the male rep, Mr Itunu, unsync the bots movements please.
+- add a lesson icon and it should open a coding training app. on the training app home page, they should be quest 1, quest 2, quest 3 and checkpoint.
+- each quest have 5 coding questions each nd checkpoint is an examination containing random 3 questions, 1 from each quest. 
+- when you click a quest, like quest 1 - you'd see five questions
+- clicking on a questions, like question 1 for example will open a side by side, coding questions and a code editor on the right side, 
+    you input the solution and submit it, the states of your submission shoud be synced with the database

@@ -13,10 +13,11 @@ const STORAGE_KEY = "PierPlace.laptop.python.v1";
 const LEGACY_KEY = "PierPlace.laptop.code.v1";
 const STARTER =
   'print("Hello, Python!")\n';
-function readDocument() {
+
+function readDocument(storageKey, legacyKey) {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY),
+      localStorage.getItem(storageKey) || localStorage.getItem(legacyKey),
     );
     if (saved?.language === "python" && typeof saved.code === "string")
       return { code: saved.code, status: "Saved on this device." };
@@ -34,8 +35,22 @@ function readDocument() {
   }
 }
 
-export default function CodeEditor() {
-  const [document, setDocument] = useState(readDocument);
+export default function CodeEditor({
+  value: controlledValue,
+  onChange: onControlledChange,
+  persist = true,
+  storageKey = STORAGE_KEY,
+  legacyKey = LEGACY_KEY,
+  title = "main.py · Python",
+  ariaLabel = "Python code editor",
+  onOutput,
+} = {}) {
+  const controlled = controlledValue !== undefined;
+  const [document, setDocument] = useState(() =>
+    controlled
+      ? { code: controlledValue, status: "" }
+      : readDocument(storageKey, legacyKey),
+  );
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
@@ -59,23 +74,33 @@ export default function CodeEditor() {
     };
   }, [runner]);
   useEffect(() => {
+    if (controlled) setDocument((previous) => ({ ...previous, code: controlledValue }));
+  }, [controlled, controlledValue]);
+  useEffect(() => {
     if (outputRef.current)
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
   }, [output, error]);
 
   function update(code) {
-    let status;
+    if (controlled) {
+      setDocument({ code, status: "" });
+      onControlledChange?.(code);
+      return;
+    }
+    let nextStatus;
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ code, language: "python" }),
-      );
-      status = "Saved on this device.";
+      if (persist) {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({ code, language: "python" }),
+        );
+        nextStatus = "Saved on this device.";
+      }
     } catch {
-      status =
+      nextStatus =
         "Not saved: device storage is unavailable or full. Copy your code somewhere safe.";
     }
-    setDocument({ code, status });
+    setDocument({ code, status: nextStatus });
   }
   async function run() {
     if (busy || !document.code.trim()) return;
@@ -87,8 +112,10 @@ export default function CodeEditor() {
         document.code,
         input,
         (text) => {
-          if (mounted.current)
+          if (mounted.current) {
             setOutput((previous) => (previous + text).slice(0, 64100));
+            onOutput?.(text);
+          }
         },
         (stage) => {
           if (mounted.current) setStatus(stage);
@@ -106,7 +133,7 @@ export default function CodeEditor() {
   return (
     <div className="code-editor-app">
       <div className="window-bar editor-toolbar">
-        <span>main.py · Python</span>
+        <span>{title}</span>
         <div className="editor-run-controls">
           <button
             type="button"
@@ -139,7 +166,7 @@ export default function CodeEditor() {
             tabSize: 4,
             insertSpaces: true,
             wordWrap: "on",
-            ariaLabel: "Python code editor",
+            ariaLabel,
             accessibilitySupport: "on",
           }}
         />
@@ -197,8 +224,9 @@ export default function CodeEditor() {
         />
       </details>
       <p className="editor-status" role="status">
-        {document.status} Runs locally; the first run downloads Python. Runs
-        stop after 10 seconds. Press Ctrl+M to toggle Tab moving focus.
+        {controlled
+          ? "Runs locally; the first run downloads Python. Runs stop after 10 seconds."
+          : `${document.status} Runs locally; the first run downloads Python. Runs stop after 10 seconds. Press Ctrl+M to toggle Tab moving focus.`}
       </p>
     </div>
   );

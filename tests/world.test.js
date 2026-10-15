@@ -1028,9 +1028,9 @@ test('reduced motion fixes foliage and idle poses, leaves sway no more than one 
 
 function assertUniqueActors(world) {
   const residents = [...world.floors.values()].flatMap(context => context.layout.objects.filter(object => object.type === 'npc'));
-  assert.equal(residents.length, 7);
-  assert.equal(new Set(residents.map(object => object.id)).size, 7);
-  assert.equal(new Set(residents.map(object => object.name)).size, 7);
+  assert.equal(residents.length, NPC_NAMES.length);
+  assert.equal(new Set(residents.map(object => object.id)).size, NPC_NAMES.length);
+  assert.equal(new Set(residents.map(object => object.name)).size, NPC_NAMES.length);
   for (const actor of world.actors) {
     assert.equal(residents.filter(object => object === actor.object).length, 1);
     assert.ok(world.floors.get(actor.object.floor).layout.objects.includes(actor.object));
@@ -1186,36 +1186,24 @@ test('every mentor transfers only at the stairs, stays unique, visits and return
   }
 });
 
-test('new mentors have distinct appearances, dialogue and behavior and reachable conversations', t => {
+test('upstairs mentors have distinct appearances, dialogue and reachable conversations', t => {
   const { world } = createHarness(t, { reducedMotion: true });
   world.setFloor(2);
-  const emmanuel = world.actors.find(actor => actor.object.name === 'Mr Emmanuel');
-  const itunu = world.actors.find(actor => actor.object.name === 'Mr Itunu');
-  assert.equal(emmanuel.object.profile.hair, '#e6ded0');
-  assert.equal(emmanuel.object.profile.wearId, 'glasses');
-  assert.equal(itunu.object.profile.wearId, 'headphones');
-  assert.notEqual(emmanuel.object.profile.skin, itunu.object.profile.skin);
-  assert.notEqual(emmanuel.object.profile.shirt, itunu.object.profile.shirt);
-  assert.ok(emmanuel.schedule.seated[0] > itunu.schedule.seated[1]);
-  assert.ok(emmanuel.schedule.inspect[0] > itunu.schedule.inspect[1]);
-  assert.ok(itunu.schedule.stops > emmanuel.schedule.stops);
-  for (const actor of [emmanuel, itunu]) {
-    assert.equal(actor.object.profile.name, actor.object.name);
-    assert.ok(NPC_LINES[actor.object.name].length >= 3);
-    assert.ok(world.interact(actor.object));
-    assertSafeRoute(world);
-    world.pending = null;
-    world.path = [];
-    world.clearSelection();
-    actor.wait = 0;
-    world._updateActors(0.05);
-    finishActorRoute(world, actor);
-    assert.ok(world.interact(actor.object));
-    assertSafeRoute(world);
-    world.pending = null;
-    world.path = [];
-    world.clearSelection();
-  }
+  const actor = world.actors.find(person => person.object.name === 'Mr Emmanuel');
+  assert.equal(actor.object.profile.hair, '#e6ded0');
+  assert.equal(actor.object.profile.wearId, 'glasses');
+  assert.equal(actor.object.profile.name, actor.object.name);
+  assert.ok(NPC_LINES[actor.object.name].length >= 3);
+  assert.ok(world.interact(actor.object));
+  assertSafeRoute(world);
+  world.pending = null;
+  world.path = [];
+  world.clearSelection();
+  actor.wait = 0;
+  world._updateActors(0.05);
+  finishActorRoute(world, actor);
+  assert.ok(world.interact(actor.object));
+  assertSafeRoute(world);
   assert.equal(new Set(Object.values(NPC_LINES).flat()).size, Object.values(NPC_LINES).flat().length);
 });
 

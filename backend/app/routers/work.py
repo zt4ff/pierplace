@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -19,6 +20,7 @@ from ..models.work import (
 )
 from ..services.battery import is_dead, tick_minutes
 from ..services.grading import passed_bar, score_pct
+from ..services.players import slugify, upsert_player
 from ..services.xp import award, partial_xp
 
 router = APIRouter(tags=["work"])
@@ -41,6 +43,87 @@ async def quest_tasks(
          "prompt": t.prompt, "xp": t.xp_value}
         for t in rows
     ]
+
+
+TRAIN_RUN = str(uuid.uuid5(uuid.NAMESPACE_DNS, "pierplace.training"))
+
+
+class TrainIdentity(BaseModel):
+    name: str | None = None
+    skin: str | None = None
+    hair: str | None = None
+    shirt: str | None = None
+
+
+class TrainSubmitIn(TrainIdentity):
+    task_id: str
+    code: str
+
+
+def grade_submission(task: QuestTask, code: str) -> tuple[int, int]:
+    """Placeholder grading: an empty buffer fails, otherwise one passing check.
+
+    Starter quest tasks ship without executable test cases, so the training app
+    treats a non-empty solution as a pass until per-task tests are authored.
+    """
+    return (1, 1) if code.strip() else (0, 1)
+
+
+async def _train_user(session: AsyncSession, name: str | None) -> User | None:
+    if not name:
+        return None
+    username = slugify(name)
+    return (await session.execute(select(User).where(User.username == username))).scalar_one_or_none()
+
+
+@router.get("/quests/train/progress")
+async def train_progress(name: str, session: AsyncSession = Depends(get_session)):
+    user = await _train_user(session, name)
+    if user is None:
+        return {}
+    rows = (await session.execute(
+        select(Submission).where(Submission.user_id == user.id, Submission.run_id == TRAIN_RUN)
+    )).scalars().all()
+    progress: dict[str, dict] = {}
+    for sub in rows:
+        key = str(sub.task_id)
+        current = progress.get(key)
+        if current is None or sub.score_pct > current["best_score"]:
+            progress[key] = {"best_score": sub.score_pct, "submitted": True}
+        else:
+            current["submitted"] = True
+    return progress
+
+
+@router.post("/quests/train/submit")
+async def train_submit(body: TrainSubmitIn, session: AsyncSession = Depends(get_session)):
+    """Guest-friendly quest submit used by the in-laptop training app."""
+    user = await upsert_player(
+        session,
+        {"name": body.name, "skin": body.skin, "hair": body.hair, "shirt": body.shirt},
+    )
+    task = (await session.execute(select(QuestTask).where(QuestTask.id == body.task_id))).scalar_one_or_none()
+    if task is None:
+        raise HTTPException(status_code=404, detail="unknown_task")
+    passed, total = grade_submission(task, body.code)
+    score = score_pct(passed, total)
+    xp = task.xp_value if score == 100 else partial_xp(task.xp_value)
+    prior_best = (await session.execute(
+        select(Submission).where(
+            Submission.user_id == user.id, Submission.run_id == TRAIN_RUN,
+            Submission.task_id == task.id, Submission.is_best.is_(True),
+        )
+    )).scalar_one_or_none()
+    is_best = prior_best is None or score >= prior_best.score_pct
+    if is_best and prior_best is not None:
+        prior_best.is_best = False
+    sub = Submission(user_id=user.id, run_id=TRAIN_RUN, task_id=task.id, code=body.code, stdin="",
+                     stdout="", grader_result={"passed": passed, "total": total},
+                     score_pct=score, xp_awarded=xp, is_best=is_best)
+    session.add(sub)
+    await award(session, user.id, TRAIN_RUN, "quest", xp, ref_id=sub.id)
+    await session.commit()
+    return {"score": score, "xp": xp, "is_best": is_best, "passed": passed, "total": total}
 
 
 @router.get("/raids/groups")
