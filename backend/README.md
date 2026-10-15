@@ -1,19 +1,38 @@
-# PierPlace Piscine Backend (FastAPI + Postgres)
+# PierPlace Backend (FastAPI + Postgres)
 
-Implements `docs/piscine-backend-contract.md`. WS teammate relays read-only events only.
+Implements `docs/piscine-backend-contract.md`. The REST API and the presence
+WebSocket are served from the same ASGI app.
 
-## Run locally
+## Run locally (bare metal, no Docker)
+
+Start a local PostgreSQL and create an owned database, then:
 
 ```sh
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-docker compose up -d db
-export PIERPLACE_DATABASE_URL=postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace
-export PIERPLACE_JWT_SECRET=dev-secret
-python -m app.seed  # floors, tables, seats (t1-t18, t19+, b1-b8, m1-3), levels, templates
-uvicorn app.main:app --reload --port 8000
+cp .env.example .env      # set PIERPLACE_DATABASE_URL for your Postgres
+python -m app.seed        # idempotent: floors, tables, seats, levels, templates
+python -m app             # ONE command: REST API + WebSocket
 ```
+
+`python -m app` serves `http://localhost:8000` and `ws://localhost:8000/ws`.
+Override with `PIERPLACE_HOST`, `PIERPLACE_PORT`, `PIERPLACE_RELOAD`.
+
+The `.env` file is loaded automatically. On Debian/Ubuntu the local Postgres can
+be reached over the unix socket without a password, e.g.
+`postgresql+asyncpg://<os-user>@/pierplace?host=/var/run/postgresql`.
+Otherwise use a TCP URL like
+`postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace`.
+
+### Live lobby (presence)
+
+- `GET /health` — liveness.
+- `WS /ws` — players send `{type:"join", profile, floor}` then
+  `{type:"move", x, y, seated, tableId, floor}`. The server persists the
+  character to `users` and fans out `welcome` / `joined` / `moved` / `left`.
+- `GET/POST /tables/{table_id}/messages` — table chat persisted in
+  `chats`/`messages`, isolated per table.
 
 ## Deploy to Render (issue #1)
 

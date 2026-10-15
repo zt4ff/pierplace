@@ -88,6 +88,7 @@ function Help({ onClose, inCampus = false }) {
 }
 export default function App() {
   const [session, setSession] = useState(null);
+  const [playerId, setPlayerId] = useState(null);
   const [page, setPage] = useState("home");
   const [dialog, setDialog] = useState(null);
   const [error, setError] = useState("");
@@ -213,6 +214,9 @@ export default function App() {
             setPage("home");
           }}
           onSeatChange={seatChanged}
+          onPresence={(message) => {
+            if (message?.type === "welcome" && message.id) setPlayerId(message.id);
+          }}
           onToast={notify}
         />
       )}
@@ -239,6 +243,7 @@ export default function App() {
         <Chat
           key={dialog.tableId}
           profile={session.profile}
+          playerId={playerId}
           tableId={dialog.tableId}
           onClose={close}
         />

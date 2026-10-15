@@ -4,12 +4,21 @@ async function request(path, { signal, ...options } = {}) {
   if (!response.ok) throw new Error(result.message || `Request failed (${response.status}).`);
   return result;
 }
+const identityQuery = identity => {
+  const params = new URLSearchParams();
+  if (identity?.playerId) params.set('playerId', identity.playerId);
+  const query = params.toString();
+  return query ? `?${query}` : '';
+};
 export const api = {
   session: signal => request('/session', { signal }),
   admit: (profile, answers) => request('/admission', { method: 'POST', body: JSON.stringify({ profile, answers }) }),
   profile: profile => request('/profile', { method: 'PUT', body: JSON.stringify(profile) }),
   floor: floor => request('/floor', { method: 'PUT', body: JSON.stringify({ floor }) }),
   completeLesson: id => request(`/lessons/${id}`, { method: 'POST' }),
-  messages: (tableId, signal) => request(`/tables/${encodeURIComponent(tableId)}/messages`, { signal }),
-  sendMessage: (tableId, text) => request(`/tables/${encodeURIComponent(tableId)}/messages`, { method: 'POST', body: JSON.stringify({ text }) }),
+  messages: (tableId, identity, signal) => request(`/tables/${encodeURIComponent(tableId)}/messages${identityQuery(identity)}`, { signal }),
+  sendMessage: (tableId, text, identity = {}) => request(`/tables/${encodeURIComponent(tableId)}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ text, playerId: identity.playerId, name: identity.name, skin: identity.skin, hair: identity.hair, shirt: identity.shirt }),
+  }),
 };

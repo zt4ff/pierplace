@@ -4,7 +4,8 @@ import { Modal, Avatar } from "./shared.jsx";
 import { api } from "../api.js";
 import { tableLabel } from "../state.js";
 
-export default function Chat({ tableId, profile, onClose }) {
+export default function Chat({ tableId, profile, playerId, onClose }) {
+  const identity = { ...profile, playerId };
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ export default function Chat({ tableId, profile, onClose }) {
     setLoading(true);
     setError("");
     api
-      .messages(tableId, controller.signal)
+      .messages(tableId, identity, controller.signal)
       .then((result) => {
         if (!controller.signal.aborted) setMessages(result.messages);
       })
@@ -34,7 +35,7 @@ export default function Chat({ tableId, profile, onClose }) {
       mounted.current = false;
       controller.abort();
     };
-  }, [tableId, retry]);
+  }, [tableId, playerId, retry]);
   useEffect(() => {
     if (list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages, sending]);
@@ -45,7 +46,7 @@ export default function Chat({ tableId, profile, onClose }) {
     setSending(true);
     setError("");
     try {
-      const result = await api.sendMessage(tableId, text.trim());
+      const result = await api.sendMessage(tableId, text.trim(), identity);
       if (mounted.current) {
         setMessages(result.messages);
         setText("");

@@ -51,16 +51,20 @@ export default function Campus({
   onToast,
   onSeatChange,
   onCameraChange,
+  onPresence,
 }) {
   const music = useMusic();
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
+  const remotesRef = useRef(new Map());
+  const selfIdRef = useRef(null);
   const callbacksRef = useRef({
     onFloorChange,
     onChat,
     onToast,
     onSeatChange,
     onCameraChange,
+    onPresence,
   });
   const seatRef = useRef(null);
   const popoverTriggerRef = useRef(null);
@@ -72,6 +76,7 @@ export default function Campus({
   const [selected, setSelected] = useState(null);
   const [travellingId, setTravellingId] = useState(null);
   const [position, setPosition] = useState({ seated: false, tableId: null });
+  const [remoteCount, setRemoteCount] = useState(0);
   const [speech, setSpeech] = useState(null);
   const [popover, setPopover] = useState(null);
   const [camera, setCamera] = useState(null);
@@ -83,6 +88,7 @@ export default function Campus({
     onToast,
     onSeatChange,
     onCameraChange,
+    onPresence,
   };
 
   useEffect(() => {
@@ -152,10 +158,49 @@ export default function Campus({
   }
 
   useEffect(() => {
+    const syncRemotes = () => {
+      const engine = engineRef.current;
+      if (engine) engine.setRemotes([...remotesRef.current.values()]);
+    };
     const presence = connectPresence({
       profile: initialRef.current.profile,
       floor: initialRef.current.floor,
-      onEvent: (msg) => callbacksRef.current.onPresence ? callbacksRef.current.onPresence(msg) : console.debug("[presence]", msg),
+      onEvent: (msg) => {
+        switch (msg?.type) {
+          case "welcome":
+            selfIdRef.current = msg.id;
+            remotesRef.current = new Map(
+              (msg.players || [])
+                .filter((player) => player?.id && player.id !== msg.id)
+                .map((player) => [player.id, player]),
+            );
+            syncRemotes();
+            setRemoteCount(remotesRef.current.size);
+            break;
+          case "joined":
+            if (msg.player?.id) remotesRef.current.set(msg.player.id, msg.player);
+            syncRemotes();
+            setRemoteCount(remotesRef.current.size);
+            break;
+          case "moved": {
+            const previous = remotesRef.current.get(msg.id);
+            if (previous) {
+              remotesRef.current.set(msg.id, { ...previous, ...msg });
+              syncRemotes();
+            }
+            break;
+          }
+          case "left":
+            if (remotesRef.current.delete(msg.id)) {
+              syncRemotes();
+              setRemoteCount(remotesRef.current.size);
+            }
+            break;
+          default:
+            break;
+        }
+        callbacksRef.current.onPresence?.(msg);
+      },
     });
     const engine = new PixelWorld(canvasRef.current, {
       camera: true,
@@ -348,6 +393,7 @@ export default function Campus({
       data-camera-y={camera?.y}
       data-camera-zoom={camera?.zoom}
       data-player-visible={camera?.playerVisible}
+      data-remote-players={remoteCount}
     >
       <canvas
         className="game-map"

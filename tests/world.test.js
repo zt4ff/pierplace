@@ -1331,3 +1331,26 @@ test('onObjectsChange accepts only functions and remains optional during transfe
     assert.equal(actor.object.floor, 2);
   }
 });
+
+test('remote players render by name on their own floor and ignore malformed state', t => {
+  const { world, ctx } = createHarness(t);
+  world.setRemotes([
+    { id: 'r1', profile: { name: 'Remote Ada', skin: '#704a36', hair: '#272830', shirt: '#788ead' }, x: 200, y: 300, floor: 1, seated: true, tableId: 'floor-1-west-1' },
+    { id: 'r2', profile: { name: 'Upstairs Bob', skin: '#a06b48', hair: '#342c30', shirt: '#be8c68' }, x: 120, y: 140, floor: 2 },
+    { id: 'r3', profile: { name: 'No Position' }, floor: 1 },
+    { id: 'r4', profile: { name: 'Bad Coords' }, x: 'nope', y: null, floor: 1 },
+  ]);
+  world.setFloor(1);
+  world.setPlayer({ name: 'Kayode' });
+  const names = ctx.texts.map(entry => entry.value);
+  assert.ok(names.includes('Remote Ada'), 'same-floor remote is drawn');
+  assert.ok(names.includes('Kayode'), 'local player still drawn');
+  assert.equal(names.includes('Upstairs Bob'), false, 'other-floor remote is hidden');
+  assert.equal(names.includes('No Position'), false, 'remote without coordinates is skipped');
+  assert.equal(names.includes('Bad Coords'), false, 'remote with non-finite coordinates is skipped');
+  assert.equal(world.remotes.size, 4, 'invalid remotes stay tracked but unrendered');
+
+  world.setRemotes(null);
+  assert.equal(world.remotes.size, 0);
+});
+

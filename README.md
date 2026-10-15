@@ -2,14 +2,28 @@
 
 A cozy pixel-art learning world built with React, Vite, Lucide icons, and a browser-based MSW mock API. The floor layout is based on `building.png`.
 
-## Run locally
+## Run locally (bare metal)
+
+The app runs without Docker against a local PostgreSQL. Two processes: the
+frontend (Vite) and the backend (FastAPI + WebSocket presence).
 
 ```sh
+# 1. Backend — one command serves the REST API and the WebSocket on :8000
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m app.seed        # idempotent: floors, tables, seats, levels, roles
+python -m app             # http://localhost:8000  and  ws://localhost:8000/ws
+
+# 2. Frontend — in another terminal
+cd ..
 npm install
 npm run dev
 ```
 
-Open the localhost URL shown by Vite. Service workers are required for the mock API; use localhost or HTTPS.
+Open the localhost URL shown by Vite. Vite proxies `/api` and `/ws` to the
+backend on `:8000`. The database URL is read from `backend/.env` (see
+`backend/.env.example`); no Docker is used.
 
 ```sh
 npm run build
@@ -37,9 +51,14 @@ npm run preview
 
 ## Mock server and storage
 
-MSW intercepts `/api/*` calls in both development and preview builds. Profiles, ID photos, admission, table histories, floor, and completed lessons are stored on this browser/device. Notes and editor code each have separate local storage entries. Photos are resized locally and are not uploaded to an external service.
+MSW intercepts `/api/session`, `/api/admission`, `/api/profile`, `/api/floor`,
+and `/api/lessons/*` in both development and preview builds. Profiles, ID
+photos, admission, floor, and completed lessons are stored on this
+browser/device. Notes and editor code each have separate local storage entries.
+Photos are resized locally and are not uploaded to an external service.
 
-Table chat includes a clearly labeled simulated campus buddy. This is a local prototype, **not live multiplayer or real authentication**. Replace the mock handlers with a backend to introduce shared accounts, presence, and chat.
+Table chat is **not** mocked: `/api/tables/:id/messages` is served by the
+backend and persisted in PostgreSQL, scoped to a physical table.
 
 ## Structure
 
@@ -54,9 +73,13 @@ Table chat includes a clearly labeled simulated campus buddy. This is a local pr
 - `src/components/Music.jsx`: persistent YouTube player, playback state, and Music window.
 - `src/components/Chat.jsx`: per-table conversations.
 - `src/components/shared.jsx`: character SVG, ID card, modal, and nonmodal popup primitives.
-- `src/mocks/`: MSW mock API and persistent mock store.
+- `src/mocks/`: MSW mock API and persistent mock store (session, admission, profile, floor, lessons).
 - `src/api.js`: API client, independent of the mock implementation.
 - `src/state.js`: profile palettes, visual puzzles, and storage validation.
+- `src/presence.js`: WebSocket client for live player presence.
+- `backend/`: FastAPI + PostgreSQL backend. `app/ws/presence.py` serves the
+  presence socket, `app/routers/tables.py` serves table chat, and
+  `app/services/players.py`/`lobby.py` persist players and messages.
 
 ## Manual review
 
@@ -66,11 +89,17 @@ Run state/API/world tests via `npm test`. Browser UI testing is currently manual
 
 ## Live presence (WebSocket)
 
-A small Python WebSocket server tracks players joining, moving, and leaving.
+The presence server now lives in the backend and shares the same port as the
+REST API — starting `python -m app` serves both. Players joining are persisted
+to the `users` table (character name and colours), their movement is broadcast
+to everyone else in real time, and table chat messages are stored in
+`chats`/`messages`.
 
-```sh
-pip install -r server/requirements.txt
-python server/presence.py   # ws://localhost:8765
-```
+- Endpoint: `ws://localhost:8000/ws` (through Vite: `ws://localhost:5173/ws`)
+- Client → server: `join` (`{ profile, floor }`), `move` (`{ x, y, seated, tableId, floor }`)
+- Server → client: `welcome` (`{ id, profile, players }`), `joined`, `moved`, `left`
+- Table chat REST: `GET/POST /api/tables/:tableId/messages`
 
-The campus connects automatically (override with `VITE_PRESENCE_URL`). Messages: `join` / `move` from the client; `welcome`, `joined`, `moved`, `left` from the server. Events are passed to an optional `onPresence` prop on `Campus`, or logged with `console.debug`. The campus still works if the server isn't running.
+The campus connects automatically and shows other players on the map. Override
+the socket URL with `VITE_PRESENCE_URL`. Events are passed to the optional
+`onPresence` prop on `Campus`. The campus still works if the backend is down.

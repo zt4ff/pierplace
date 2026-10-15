@@ -1191,6 +1191,7 @@ export class PixelWorld {
     this.floor = 1;
     this.active = false;
     this.destroyed = false;
+    this.remotes = new Map();
     this.profile = {
       name: "You",
       skin: "#b87d55",
@@ -1432,6 +1433,17 @@ export class PixelWorld {
   setPlayer(profile = {}) {
     if (this.destroyed) return;
     this.profile = { ...this.profile, ...profile };
+    this._render(this.win.performance.now());
+  }
+
+  /** Other connected players, keyed by presence id. Rendered on their floor. */
+  setRemotes(list) {
+    if (this.destroyed) return;
+    this.remotes = new Map(
+      (Array.isArray(list) ? list : [])
+        .filter((remote) => remote && remote.id)
+        .map((remote) => [remote.id, remote]),
+    );
     this._render(this.win.performance.now());
   }
 
@@ -2425,6 +2437,25 @@ export class PixelWorld {
       player: true,
       idleType: "player",
       idlePhase: 337,
+    });
+    this.remotes.forEach((remote) => {
+      if (!remote.profile?.name) return;
+      if (Number(remote.floor) !== this.floor) return;
+      const x = Number(remote.x);
+      const y = Number(remote.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      people.push({
+        x,
+        y,
+        seated: Boolean(remote.seated),
+        tableId: remote.tableId ?? null,
+        direction: remote.direction || "down",
+        profile: remote.profile,
+        player: false,
+        remote: true,
+        idleType: "player",
+        idlePhase: 120 + (String(remote.id).length % 60),
+      });
     });
     people
       .sort((a, b) => a.y - b.y)

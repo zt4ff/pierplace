@@ -22,9 +22,9 @@ function validProfile(profile) {
 }
 const error = (message, status = 400) => HttpResponse.json({ message }, { status });
 const REPLIES = ['Hey! Glad you pulled up a chair. What are you learning today?', 'Small steps count. Have you opened the campus laptop yet?', 'I like that idea. Write it down in Notes so you can come back to it.'];
-export function createHandlers(store, latency = 220) {
+export function createHandlers(store, latency = 220, { chat = true } = {}) {
   const sessionResponse = () => HttpResponse.json({ ...store.get(), persistent: store.isPersistent() });
-  return [
+  const handlers = [
     http.get('*/api/session', async () => { await delay(latency); return sessionResponse(); }),
     http.post('*/api/admission', async ({ request }) => {
       await delay(latency);
@@ -57,6 +57,10 @@ export function createHandlers(store, latency = 220) {
       store.update({ lessons });
       return HttpResponse.json({ lessons });
     }),
+  ];
+  // Table chat is owned by the backend so messages persist in Postgres. Tests
+  // still exercise the mock history by keeping `chat: true` (the default).
+  if (chat) handlers.push(
     http.get('*/api/tables/:id/messages', async ({ params }) => {
       await delay(latency);
       if (!validTable(params.id)) return error('Table not found.', 404);
@@ -77,5 +81,6 @@ export function createHandlers(store, latency = 220) {
       store.update({ chats: { ...current.chats, [params.id]: next } });
       return HttpResponse.json({ messages: next }, { status: 201 });
     }),
-  ];
+  );
+  return handlers;
 }
