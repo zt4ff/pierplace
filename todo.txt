@@ -1,6 +1,5 @@
 - read and understand the code in backend, docs, and server folder
 - understand the frontend code in src
+- avoid e2e tests, I'd test myself henceforths
 - ignore any docker and build the app to run bare metal. 
-- consolidated the server codes into the backend folder and the backend folder should have a single command to get the api and websocket server running
-- only work on the players joining the server, connecting them to the websocket and database (so their information, chat is persisted),
-    showing other players movement as they move on the map and the table chat configuration.
+- remove Kayode the male rep, Mr Itunu, unsync the bots movements please.

@@ -55,20 +55,10 @@ export const NPC_LINES = {
     "A clear plan makes a difficult project feel possible.",
     "Test your assumptions before you build on them.",
   ],
-  "Mr Itunu": [
-    "Show me your prototype. We can learn by trying it together.",
-    "I’m checking in on projects upstairs and downstairs—what are you making?",
-    "Make one small improvement, test it, then try the next.",
-  ],
   "Facility Manager": [
     "Water is in the middle, restrooms on the right. Make yourself at home!",
     "Two floors, plenty of seats, and room for your next big idea.",
     "Please keep the walkways clear. Happy exploring!",
-  ],
-  Kayode: [
-    "Hey! Welcome to the crew. Come say hello at a table.",
-    "The beanbags are my favorite thinking spot. Don’t tell anyone.",
-    "Got an idea for the community? I’m all ears.",
   ],
 };
 const KEY = "PierPlace.v1";

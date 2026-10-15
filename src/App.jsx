@@ -53,7 +53,7 @@ function Help({ onClose, inCampus = false }) {
           {
             Icon: MessageCircle,
             title: "A friendly face, a shared idea.",
-            text: "Walk over to Mr Jonathan, Mr Femi, Mr Ezekiel, Mr Emmanuel, Mr Itunu, the Facility Manager, or Kayode, the male rep. Mentors move independently between floors, so look for them where they are. Table chat has separate histories and clearly labeled simulated replies.",
+            text: "Walk over to Mr Jonathan, Mr Femi, Mr Ezekiel, Mr Emmanuel, or the Facility Manager. Mentors move independently between floors, so look for them where they are. Table chat has separate histories and clearly labeled simulated replies.",
           },
           {
             Icon: LaptopIcon,

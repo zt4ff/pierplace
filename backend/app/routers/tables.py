@@ -15,6 +15,7 @@ from ..services.lobby import (
     serialize_messages,
 )
 from ..services.players import upsert_player
+from ..ws.chat import manager as chat_manager
 from ..ws.presence import manager
 
 router = APIRouter(prefix="/tables", tags=["tables"])
@@ -67,4 +68,7 @@ async def create_message(
     )
     chat = await get_or_create_table_chat(session, tag)
     await post_table_message(session, chat.id, user.id, text)
-    return {"messages": await serialize_messages(session, chat.id)}
+    messages = await serialize_messages(session, chat.id)
+    # Fan the new message out to everyone with this table's chat open.
+    await chat_manager.publish(tag, messages[-1])
+    return {"messages": messages}

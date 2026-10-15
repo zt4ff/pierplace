@@ -9,6 +9,11 @@ function defaultUrl() {
   return 'ws://localhost:8000/ws';
 }
 
+/** Socket for one table's chat room, on the same origin as presence. */
+export function chatSocketUrl(tableId) {
+  return `${defaultUrl()}/chat/${encodeURIComponent(tableId)}`;
+}
+
 export function connectPresence({ profile, floor, onEvent, url = defaultUrl() }) {
   let socket;
   try {
