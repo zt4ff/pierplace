@@ -63,3 +63,14 @@ Table chat includes a clearly labeled simulated campus buddy. This is a local pr
 Try both floors, select objects near screen edges, pan away from the character, recenter, and watch a mentor complete an inspection and return home. Check Kayode's reserved seat, sitting/standing and chat gating, profile photo uploads, and all laptop apps. On a phone, verify tap-to-select versus drag-to-pan.
 
 Run state/API/world tests via `npm test`. Browser UI testing is currently manual; do not run Playwright during manual review.
+
+## Live presence (WebSocket)
+
+A small Python WebSocket server tracks players joining, moving, and leaving.
+
+```sh
+pip install -r server/requirements.txt
+python server/presence.py   # ws://localhost:8765
+```
+
+The campus connects automatically (override with `VITE_PRESENCE_URL`). Messages: `join` / `move` from the client; `welcome`, `joined`, `moved`, `left` from the server. Events are passed to an optional `onPresence` prop on `Campus`, or logged with `console.debug`. The campus still works if the server isn't running.
