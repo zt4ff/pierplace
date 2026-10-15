@@ -1,0 +1,34 @@
+# PierPlace Piscine Backend (FastAPI + Postgres)
+
+Implements `docs/piscine-backend-contract.md`. WS teammate relays read-only events only.
+
+## Run locally
+
+```sh
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+docker compose up -d db
+export PIERPLACE_DATABASE_URL=postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace
+export PIERPLACE_JWT_SECRET=dev-secret
+python -m app.seed  # floors, tables, seats (t1-t18, t19+, b1-b8, m1-3), levels, templates
+uvicorn app.main:app --reload --port 8000
+```
+
+## Team notes
+- Auth: `POST /auth/register|login` (username+password, additive to game-pass).
+  JWT bearer reused for HTTP + WS.
+- Rejoin: `GET /me/state?run_id=` + replay undelivered/unread `/notify/inbox`.
+- Locks: illegal moves 403 `locked`; dead laptop 409 `battery_dead` on submit/open.
+- Defense: 30s total, timeout=fail, one shared answer box, pass shares 50 each.
+- Board: `GET /xp/board?level=` (25 fixed bands, top 1190). `GET /xp/me` for self.
+- Location: `POST /location/move` (403 when locked), `GET /location/me|roster`.
+- Piscine: `PATCH /piscine/runs/{id}/threshold` (mentor), briefing-floor, food-floor-status.
+- Work: `GET /quests/tasks`, raid groups + `POST /raids/defenses/open` (+30s),
+  `GET /checkpoints/unlocked` (100% bar gates next), quest best-kept.
+- Social: `GET /notify/inbox` (unread-first replay), `GET /laptops/me` HUD.
+- Mentors: `GET /mentors/activity|id-card`, `POST /mentors/triggers/handle`;
+  behavior attend (briefing 20/assembly 10) + chat-participation (5).
+- WS events (relay only, no writes): piscine.started, event.warned/started/closed,
+  lock.applied, seat.ejected, chat.message, xp.awarded, level.up, battery.low,
+  trigger.created, meeting.called, memo.sent, food.on_floor, defense.opened/decided.

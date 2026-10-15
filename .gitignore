@@ -4,3 +4,9 @@ playwright-report/
 test-results/
 .DS_Store
 *.local
+# Python / backend
+__pycache__/
+*.pyc
+.venv/
+.env
+!.env.example
