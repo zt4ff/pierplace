@@ -1,8 +1,18 @@
 import { PRESENCE_URL } from './config.js';
 
-// Connects to the backend presence WebSocket (FastAPI `app/ws/presence.py`).
-// Tracks other players in real time. The URL follows the REST API base
-// (VITE_API_BASE) and can be overridden with VITE_PRESENCE_URL.
+// Read-only presence feed from the FastAPI backend (`app/ws/presence.py`),
+// connected as `/ws?token=<JWT>&run_id=<id>`. Positions are written via REST
+// `POST /location/move`; this socket only receives `snapshot`,
+// `presence.joined`, `presence.moved`, `presence.left` and `presence.rejected`.
+// The client never sends profile or position writes. Stays offline (no-op)
+// when no token or run id is stored. URL follows VITE_API_BASE, override with
+// VITE_PRESENCE_URL.
+const NOOP = { close() {} };
+
+function storage(key) {
+  try { return globalThis.localStorage?.getItem(key) || null; } catch { return null; }
+}
+
 function defaultUrl() {
   return PRESENCE_URL;
 }
@@ -12,26 +22,25 @@ export function chatSocketUrl(tableId) {
   return `${defaultUrl()}/chat/${encodeURIComponent(tableId)}`;
 }
 
-export function connectPresence({ profile, floor, onEvent, url = defaultUrl() }) {
+export function connectPresence({
+  onEvent,
+  token = storage('pierplace.token'),
+  runId = storage('pierplace.run_id'),
+  url = defaultUrl(),
+} = {}) {
+  if (!url || !token || !runId || typeof WebSocket === 'undefined') return NOOP;
   let socket;
   try {
-    socket = new WebSocket(url);
+    const u = new URL(url, globalThis.location?.href);
+    u.searchParams.set('token', token);
+    u.searchParams.set('run_id', runId);
+    socket = new WebSocket(u.toString());
   } catch {
-    return { sendMove() {}, close() {} };
+    return NOOP;
   }
-  socket.onopen = () => socket.send(JSON.stringify({
-    type: 'join',
-    profile: { name: profile?.name, skin: profile?.skin, hair: profile?.hair, shirt: profile?.shirt },
-    floor,
-  }));
   socket.onmessage = event => {
     try { onEvent?.(JSON.parse(event.data)); } catch { /* ignore bad frames */ }
   };
-  socket.onerror = () => {}; // server is optional; the campus still works offline
-  return {
-    sendMove(move) {
-      if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'move', ...move }));
-    },
-    close() { socket.close(); },
-  };
+  socket.onerror = () => {}; // backend is optional; the campus still works offline
+  return { close() { socket.close(); } };
 }

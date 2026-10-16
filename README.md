@@ -92,17 +92,19 @@ Run state/API/world tests via `npm test`. Browser UI testing is currently manual
 
 ## Live presence (WebSocket)
 
-The presence server now lives in the backend and shares the same port as the
-REST API — starting `python -m app` serves both. Players joining are persisted
-to the `users` table (character name and colours), their movement is broadcast
-to everyone else in real time, and table chat messages are stored in
+The presence server lives in the backend and shares the same port as the
+REST API — starting `python -m app` serves both. Following
+`docs/piscine-backend-contract.md`, the presence socket is an authenticated,
+**read-only broadcast relay**: positions are written via REST
+`POST /location/move`, never over the socket. Table chat messages are stored in
 `chats`/`messages`.
 
-- Endpoint: `wss://pierplace.onrender.com/ws` (local backend: `ws://localhost:8000/ws`)
-- Client → server: `join` (`{ profile, floor }`), `move` (`{ x, y, seated, tableId, floor }`)
-- Server → client: `welcome` (`{ id, profile, players }`), `joined`, `moved`, `left`
-- Table chat REST: `GET/POST /tables/:tableId/messages`
+- Endpoint: `wss://pierplace.onrender.com/ws?token=<JWT>&run_id=<id>` (local: `ws://localhost:8000/ws?...`); bad/missing token closes with `4401`
+- Client → server: nothing except `ping` (→ `pong`); any other frame gets `{type:"error",reason:"read_only_socket"}`
+- Server → client: `snapshot` (`{ id, players }` from `location_states`, on every connect/reconnect), `presence.joined`, `presence.moved`, `presence.left`, and `presence.rejected` (to the mover only, on a locked move)
+- Table chat: `GET/POST /tables/:tableId/messages`, live room at `/ws/chat/:tableId`
 
-The campus connects automatically and shows other players on the map. Override
-the socket URL with `VITE_PRESENCE_URL`. Events are passed to the optional
-`onPresence` prop on `Campus`. The campus still works if the backend is down.
+The campus connects only when a token (`localStorage['pierplace.token']`) and
+run id (`localStorage['pierplace.run_id']`) are stored; otherwise it stays
+offline. Override the socket URL with `VITE_PRESENCE_URL`. Events are passed to
+the optional `onPresence` prop on `Campus`. The campus still works if the backend is down.

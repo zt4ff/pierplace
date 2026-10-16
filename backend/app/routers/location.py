@@ -7,7 +7,7 @@ from ..core.deps import current_user
 from ..db.session import get_session
 from ..models.piscine import LocationState, MovementLog
 from ..models.user import User
-from ..realtime import manager
+from ..ws.presence import manager
 
 router = APIRouter(prefix="/location", tags=["location"])
 
@@ -67,15 +67,16 @@ async def move(body: MoveIn, user: User = Depends(current_user), session: AsyncS
     )
     await session.commit()
     await manager.broadcast(
-        body.run_id,
         {
             "type": "presence.moved",
+            "id": str(user.id),
             "user": str(user.id),
             "floor": loc.floor_code,
             "seat": loc.seat_tag,
             "beanbag": loc.beanbag_tag,
             "lock": loc.lock,
         },
+        run_id=body.run_id,
     )
     return {"ok": True, "floor": loc.floor_code, "lock": loc.lock}
 

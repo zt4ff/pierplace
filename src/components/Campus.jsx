@@ -163,11 +163,9 @@ export default function Campus({
       if (engine) engine.setRemotes([...remotesRef.current.values()]);
     };
     const presence = connectPresence({
-      profile: initialRef.current.profile,
-      floor: initialRef.current.floor,
       onEvent: (msg) => {
         switch (msg?.type) {
-          case "welcome":
+          case "snapshot":
             selfIdRef.current = msg.id;
             remotesRef.current = new Map(
               (msg.players || [])
@@ -177,20 +175,27 @@ export default function Campus({
             syncRemotes();
             setRemoteCount(remotesRef.current.size);
             break;
-          case "joined":
-            if (msg.player?.id) remotesRef.current.set(msg.player.id, msg.player);
-            syncRemotes();
-            setRemoteCount(remotesRef.current.size);
+          case "presence.joined":
+            if (msg.id && msg.id !== selfIdRef.current) {
+              const { type: _type, ...player } = msg;
+              remotesRef.current.set(msg.id, {
+                ...remotesRef.current.get(msg.id),
+                ...player,
+              });
+              syncRemotes();
+              setRemoteCount(remotesRef.current.size);
+            }
             break;
-          case "moved": {
+          case "presence.moved": {
             const previous = remotesRef.current.get(msg.id);
             if (previous) {
-              remotesRef.current.set(msg.id, { ...previous, ...msg });
+              const { type: _type, ...update } = msg;
+              remotesRef.current.set(msg.id, { ...previous, ...update });
               syncRemotes();
             }
             break;
           }
-          case "left":
+          case "presence.left":
             if (remotesRef.current.delete(msg.id)) {
               syncRemotes();
               setRemoteCount(remotesRef.current.size);

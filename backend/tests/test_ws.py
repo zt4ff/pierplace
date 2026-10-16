@@ -1,6 +1,7 @@
 """WebSocket presence tests; DB loaders are monkeypatched so no Postgres is needed."""
 
 import asyncio
+import json
 import uuid
 from types import SimpleNamespace
 
@@ -10,8 +11,8 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.core.security import create_token
 from app.main import app
-from app.realtime import ConnectionManager
-from app.routers import ws as ws_router
+from app.ws import presence as ws_router
+from app.ws.presence import ConnectionManager
 
 
 def _user(name):
@@ -69,33 +70,33 @@ def test_snapshot_join_leave_and_read_only(users):
             sb.send_json({"type": "ping"})
             assert sb.receive_json() == {"type": "pong"}
         left = sa.receive_json()
-        assert left == {"type": "presence.left", "user": str(b.id)}
+        assert left == {"type": "presence.left", "id": str(b.id), "user": str(b.id)}
 
 
 class FakeWS:
     def __init__(self, fail=False):
         self.sent, self.fail = [], fail
 
-    async def send_json(self, m):
+    async def send_text(self, m):
         if self.fail:
             raise RuntimeError("closed")
-        self.sent.append(m)
+        self.sent.append(json.loads(m))
 
 
 def test_manager_broadcast_scoping():
     async def run():
         m = ConnectionManager()
         a, b, c, dead = FakeWS(), FakeWS(), FakeWS(), FakeWS(fail=True)
-        await m.add("r1", "ua", a)
-        await m.add("r1", "ub", b)
-        await m.add("r2", "uc", c)
-        await m.add("r1", "ud", dead)
-        await m.broadcast("r1", {"type": "x"}, exclude=a)
+        m.add(a, {"id": "ua", "run_id": "r1"})
+        m.add(b, {"id": "ub", "run_id": "r1"})
+        m.add(c, {"id": "uc", "run_id": "r2"})
+        m.add(dead, {"id": "ud", "run_id": "r1"})
+        await m.broadcast({"type": "x"}, skip=a, run_id="r1")
         assert a.sent == [] and b.sent == [{"type": "x"}] and c.sent == []
         assert m.count("r1") == 2  # dead socket pruned
         await m.send_to_user("r1", "ua", {"type": "y"})
         assert a.sent == [{"type": "y"}] and b.sent == [{"type": "x"}]
-        await m.remove("r1", a)
-        await m.remove("r1", b)
+        m.remove(a)
+        m.remove(b)
         assert m.count("r1") == 0
     asyncio.run(run())
