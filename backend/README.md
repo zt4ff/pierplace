@@ -65,3 +65,6 @@ with `/health` checks. Apply via Dashboard → New → Blueprint on this repo.
 - WS events (relay only, no writes): piscine.started, event.warned/started/closed,
   lock.applied, seat.ejected, chat.message, xp.awarded, level.up, battery.low,
   trigger.created, meeting.called, memo.sent, food.on_floor, defense.opened/decided.
+
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000
