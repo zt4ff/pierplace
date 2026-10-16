@@ -177,7 +177,6 @@ export default function Campus({
       onMove: (next) => {
         const world = engineRef.current;
         if (!world) return;
-        presence.sendMove({ ...next, floor: world.floor });
         setPosition((previous) =>
           previous.seated === next.seated && previous.tableId === next.tableId
             ? previous

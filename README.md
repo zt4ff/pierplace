@@ -66,11 +66,6 @@ Run state/API/world tests via `npm test`. Browser UI testing is currently manual
 
 ## Live presence (WebSocket)
 
-A small Python WebSocket server tracks players joining, moving, and leaving.
+Presence is served by the FastAPI backend (`backend/`) at `/ws?token=<JWT>&run_id=<id>`, following `docs/piscine-backend-contract.md`. The socket is a **read-only broadcast relay**: positions are written via REST `POST /location/move`, and the server pushes `snapshot` (on connect/reconnect), `presence.joined`, `presence.moved`, `presence.left` (and `presence.rejected` to the mover on a locked move). The same JWT is used for HTTP and WS.
 
-```sh
-pip install -r server/requirements.txt
-python server/presence.py   # ws://localhost:8765
-```
-
-The campus connects automatically (override with `VITE_PRESENCE_URL`). Messages: `join` / `move` from the client; `welcome`, `joined`, `moved`, `left` from the server. Events are passed to an optional `onPresence` prop on `Campus`, or logged with `console.debug`. The campus still works if the server isn't running.
+The campus connects only when a URL (`VITE_PRESENCE_URL`, or derived from `VITE_API_BASE`), a token (`localStorage['pierplace.token']`) and a run id (`localStorage['pierplace.run_id']`) are present; otherwise it stays offline. Events go to an optional `onPresence` prop on `Campus`, or `console.debug`.

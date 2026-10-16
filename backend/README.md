@@ -46,3 +46,7 @@ with `/health` checks. Apply via Dashboard → New → Blueprint on this repo.
 - WS events (relay only, no writes): piscine.started, event.warned/started/closed,
   lock.applied, seat.ejected, chat.message, xp.awarded, level.up, battery.low,
   trigger.created, meeting.called, memo.sent, food.on_floor, defense.opened/decided.
+
+## Realtime presence (`/ws`)
+
+`ws://<host>/ws?token=<JWT>&run_id=<id>` — read-only broadcast relay (see `app/realtime.py`, `app/routers/ws.py`). Invalid/unknown token closes with code `4401`. On connect: `{type:"snapshot", players:[...]}` (roster shape + `beanbag`, `display_name`, `character`), then `presence.joined` to others; `presence.moved` after each successful `POST /location/move`; `presence.left` on disconnect. Client messages other than `{type:"ping"}` get `{type:"error",reason:"read_only_socket"}`. Fan-out is in-process memory, so run a single worker (or add a shared pub/sub) for now.
