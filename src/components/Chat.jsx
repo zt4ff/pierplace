@@ -2,9 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, MessageCircle, Sparkles } from "lucide-react";
 import { Modal, Avatar } from "./shared.jsx";
 import { api } from "../api.js";
+import { chatSocketUrl } from "../presence.js";
 import { tableLabel } from "../state.js";
 
-export default function Chat({ tableId, profile, onClose }) {
+// Merge by message id so the history fetch and the live socket never duplicate.
+function mergeMessages(current, incoming) {
+  const seen = new Set(current.map((message) => message.id));
+  const merged = [...current];
+  for (const message of incoming) {
+    if (message?.id && seen.has(message.id)) continue;
+    seen.add(message?.id);
+    merged.push(message);
+  }
+  return merged;
+}
+
+export default function Chat({ tableId, profile, playerId, onClose }) {
+  const identity = { ...profile, playerId };
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -20,9 +34,10 @@ export default function Chat({ tableId, profile, onClose }) {
     setLoading(true);
     setError("");
     api
-      .messages(tableId, controller.signal)
+      .messages(tableId, identity, controller.signal)
       .then((result) => {
-        if (!controller.signal.aborted) setMessages(result.messages);
+        if (!controller.signal.aborted)
+          setMessages((current) => mergeMessages(current, result.messages));
       })
       .catch((error) => {
         if (!controller.signal.aborted) setError(error.message);
@@ -34,7 +49,31 @@ export default function Chat({ tableId, profile, onClose }) {
       mounted.current = false;
       controller.abort();
     };
-  }, [tableId, retry]);
+  }, [tableId, playerId, retry]);
+  useEffect(() => {
+    let socket;
+    try {
+      socket = new WebSocket(chatSocketUrl(tableId));
+    } catch {
+      return undefined;
+    }
+    socket.onmessage = (event) => {
+      let frame;
+      try {
+        frame = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      if (frame?.type === "history" && Array.isArray(frame.messages)) {
+        setMessages((current) => mergeMessages(current, frame.messages));
+        setLoading(false);
+      } else if (frame?.type === "message" && frame.message) {
+        setMessages((current) => mergeMessages(current, [frame.message]));
+      }
+    };
+    socket.onerror = () => {}; // chat still works over REST when the socket drops
+    return () => socket.close();
+  }, [tableId]);
   useEffect(() => {
     if (list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages, sending]);
@@ -45,9 +84,9 @@ export default function Chat({ tableId, profile, onClose }) {
     setSending(true);
     setError("");
     try {
-      const result = await api.sendMessage(tableId, text.trim());
+      const result = await api.sendMessage(tableId, text.trim(), identity);
       if (mounted.current) {
-        setMessages(result.messages);
+        setMessages((current) => mergeMessages(current, result.messages));
         setText("");
       }
     } catch (error) {
@@ -98,7 +137,7 @@ export default function Chat({ tableId, profile, onClose }) {
           messages.map((message, index) => (
             <article
               className={`chat-message ${message.name === profile.name ? "own" : ""}`}
-              key={`${message.time}-${index}`}
+              key={message.id || `${message.time}-${index}`}
             >
               <div className="chat-message-head">
                 {message.name === profile.name && <Avatar profile={profile} />}

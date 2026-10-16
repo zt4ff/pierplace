@@ -7,9 +7,9 @@ Schema details: `piscine-database.md`. API/WS names: `piscine-backend-contract.m
 ## Cast
 - **Candidate** (e.g. Freedom): registers (username+password, character, photo),
   plays game test (3 puzzles), gets ID + seat + laptop on pass.
-- **Reps** (male Kayode + female rep): candidates with reserved seats + privileges
+- **Reps** (female rep): candidates with reserved seats + privileges
   (call meeting 1/week each + broadcast memo). Same XP + board.
-- **Coding mentors** (Jonathan, Femi, Ezekiel, Emmanuel, Itunu): seeded accounts,
+- **Coding mentors** (Jonathan, Femi, Ezekiel, Emmanuel): seeded accounts,
   roam free always, memo-only except Jonathan (meetings + anything anytime),
   eject squatters/no-shows, run raid defenses (1 mentor per group), view all
   student details via ID/activity laptop. Mentor corner `m1...` always-on.

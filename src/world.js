@@ -28,9 +28,7 @@ const NPC_NAMES = [
   "Mr Femi",
   "Mr Ezekiel",
   "Facility Manager",
-  "Kayode, the male rep",
   "Mr Emmanuel",
-  "Mr Itunu",
 ];
 const MENTOR_SCHEDULES = {
   "Mr Jonathan": {
@@ -60,13 +58,6 @@ const MENTOR_SCHEDULES = {
     speed: 46,
     stops: 1,
     transferEvery: 3,
-  },
-  "Mr Itunu": {
-    seated: [45, 65],
-    inspect: [4, 8],
-    speed: 58,
-    stops: 2,
-    transferEvery: 2,
   },
 };
 const MENTOR_HOMES = [105, 175, 245].map((x, i) => ({
@@ -307,13 +298,13 @@ function makeLayout(floor) {
   });
   obstacles.push({ x: 439, y: 568, w: 148, h: 84 });
 
-  const cornerName = floor === 1 ? NPC_NAMES[0] : NPC_NAMES[5];
+  const cornerName = floor === 1 ? NPC_NAMES[0] : NPC_NAMES[4];
   addObject({
     type: "mentor",
     id: "mentor",
     label: `${cornerName} · mentor corner`,
     name: cornerName,
-    npcId: floor === 1 ? "floor-1-npc-1" : "floor-2-npc-6",
+    npcId: floor === 1 ? "floor-1-npc-1" : "floor-2-npc-5",
     action: `Talk to ${cornerName}`,
     x: 105,
     y: 529,
@@ -355,21 +346,11 @@ function makeLayout(floor) {
     approachY: 638,
   });
 
-  const kayodeSeat = objects.find(
-    (object) => object.id === scoped("west-1-chair-0-9"),
-  );
-  if (floor === 1) {
-    kayodeSeat.occupantId = scoped("npc-5");
-    kayodeSeat.occupantName = NPC_NAMES[4];
-    kayodeSeat.label += " · occupied by Kayode";
-    kayodeSeat.action = "Talk to Kayode";
-  }
   NPC_NAMES.forEach((name, i) => {
-    if ((i < 5 ? 1 : 2) !== floor) return;
-    const home = MENTOR_HOMES[i < 3 ? i : i - 5];
-    const student = i === 4;
-    const x = home ? home.x : student ? kayodeSeat.x : 1110;
-    const y = home ? home.y : student ? kayodeSeat.y + 6 : 666;
+    if ((i < 4 ? 1 : 2) !== floor) return;
+    const home = MENTOR_HOMES[i < 3 ? i : i - 4];
+    const x = home ? home.x : 1110;
+    const y = home ? home.y : 666;
     addObject({
       type: "npc",
       id: `npc-${i + 1}`,
@@ -380,58 +361,21 @@ function makeLayout(floor) {
       y,
       w: 30,
       h: 42,
-      seated: Boolean(home) || student,
-      direction: home ? "up" : student ? kayodeSeat.facing : "down",
+      seated: Boolean(home),
+      direction: home ? "up" : "down",
       step: 0,
       moving: false,
-      idleType: home ? "writing" : student ? "typing" : "manager",
+      idleType: home ? "writing" : "manager",
       idlePhase: 613 + i * 1229,
       homeId: home ? scoped(`mentor-home-${i + 1}`) : null,
-      seatId: student ? kayodeSeat.id : null,
-      tableId: student ? kayodeSeat.tableId : null,
-      approachX: home ? home.approachX : student ? kayodeSeat.approachX : x,
-      approachY: home
-        ? home.approachY
-        : student
-          ? kayodeSeat.approachY
-          : y + 26,
+      approachX: home ? home.approachX : x,
+      approachY: home ? home.approachY : y + 26,
       profile: {
         name,
-        skin: [
-          "#a66b49",
-          "#70472f",
-          "#b57c54",
-          "#895337",
-          "#8f5c3e",
-          "#5b392b",
-          "#d7a076",
-        ][i],
-        hair: [
-          "#332c30",
-          "#24262d",
-          "#34302b",
-          "#4c3b32",
-          "#282a32",
-          "#e6ded0",
-          "#75523a",
-        ][i],
-        shirt: [
-          "#638e87",
-          "#886d9f",
-          "#bd8458",
-          "#677f9d",
-          "#5c9b92",
-          "#6487aa",
-          "#bc7082",
-        ][i],
-        wearId:
-          i === 3
-            ? "cap"
-            : i === 1 || i === 5
-              ? "glasses"
-              : i === 6
-                ? "headphones"
-                : "none",
+        skin: ["#a66b49", "#70472f", "#b57c54", "#895337", "#5b392b"][i],
+        hair: ["#332c30", "#24262d", "#34302b", "#4c3b32", "#e6ded0"][i],
+        shirt: ["#638e87", "#886d9f", "#bd8458", "#677f9d", "#6487aa"][i],
+        wearId: i === 3 ? "cap" : i === 1 || i === 4 ? "glasses" : "none",
       },
     });
   });
@@ -848,7 +792,7 @@ function drawUtilities(ctx, layout, { plants = true } = {}) {
       tint: i === 1 ? "teal" : "purple",
     });
     const name =
-      layout.floor === 1 ? home.name : NPC_NAMES[i + 5] || "Guest mentor";
+      layout.floor === 1 ? home.name : NPC_NAMES[i + 4] || "Guest mentor";
     text(ctx, name.replace("Mr ", "").toUpperCase(), home.x, 490, 7, "#64837a");
   });
   if (plants) drawPlants(ctx, 0, true, "mentor");
@@ -1191,6 +1135,7 @@ export class PixelWorld {
     this.floor = 1;
     this.active = false;
     this.destroyed = false;
+    this.remotes = new Map();
     this.profile = {
       name: "You",
       skin: "#b87d55",
@@ -1435,6 +1380,17 @@ export class PixelWorld {
     this._render(this.win.performance.now());
   }
 
+  /** Other connected players, keyed by presence id. Rendered on their floor. */
+  setRemotes(list) {
+    if (this.destroyed) return;
+    this.remotes = new Map(
+      (Array.isArray(list) ? list : [])
+        .filter((remote) => remote && remote.id)
+        .map((remote) => [remote.id, remote]),
+    );
+    this._render(this.win.performance.now());
+  }
+
   setFloor(floor) {
     if (floor !== 1 && floor !== 2)
       throw new RangeError("Floor must be 1 or 2.");
@@ -1625,7 +1581,7 @@ export class PixelWorld {
         this.actors.push({
           object,
           schedule,
-          kind: schedule ? "mentor" : object.seatId ? "student" : "manager",
+          kind: schedule ? "mentor" : "manager",
           home,
           homeFloor: layout.floor,
           speed: schedule?.speed || 48,
@@ -1634,7 +1590,7 @@ export class PixelWorld {
           lastTableId: null,
           outings: 0,
           stopsRemaining: 0,
-          state: schedule ? "home" : object.seatId ? "student" : "pause",
+          state: schedule ? "home" : "pause",
           wait: schedule
             ? randomBetween(...schedule.seated)
             : randomBetween(3, 6),
@@ -1696,7 +1652,6 @@ export class PixelWorld {
 
   _syncActorApproach(actor) {
     const object = actor.object;
-    if (actor.kind === "student") return;
     if (actor.home && object.seated) {
       object.approachX = actor.home.approachX;
       object.approachY = actor.home.approachY;
@@ -1782,7 +1737,7 @@ export class PixelWorld {
     this.actors.forEach((actor) => {
       const object = actor.object;
       object.moving = false;
-      if (actor.kind === "student" || this._actorPaused(actor)) return;
+      if (this._actorPaused(actor)) return;
       if (actor.path.length) {
         let distance = actor.speed * dt;
         while (distance > 0 && actor.path.length) {
@@ -2425,6 +2380,25 @@ export class PixelWorld {
       player: true,
       idleType: "player",
       idlePhase: 337,
+    });
+    this.remotes.forEach((remote) => {
+      if (!remote.profile?.name) return;
+      if (Number(remote.floor) !== this.floor) return;
+      const x = Number(remote.x);
+      const y = Number(remote.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      people.push({
+        x,
+        y,
+        seated: Boolean(remote.seated),
+        tableId: remote.tableId ?? null,
+        direction: remote.direction || "down",
+        profile: remote.profile,
+        player: false,
+        remote: true,
+        idleType: "player",
+        idlePhase: 120 + (String(remote.id).length % 60),
+      });
     });
     people
       .sort((a, b) => a.y - b.y)

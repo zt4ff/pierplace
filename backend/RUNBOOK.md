@@ -25,9 +25,9 @@ a student — so you can prove every link in that chain works.
 
 ## 0. What you need before starting
 
-- **Docker** — a tool that runs a real Postgres database in a sealed box on
-  your machine, without you installing Postgres yourself. Check with
-  `docker --version`.
+- **PostgreSQL 14+ running natively** — check with `pg_isready`. On
+  Debian/Ubuntu install and start it with
+  `sudo apt install postgresql`, then `sudo systemctl start postgresql`.
 - **Python 3.10+** — check with `python3 --version`.
 - Two terminal windows (one for the server, one for commands).
 
@@ -36,21 +36,21 @@ a student — so you can prove every link in that chain works.
 ## 1. Start the database
 
 ```sh
-docker compose -f backend/docker-compose.yml up -d db
-docker compose -f backend/docker-compose.yml ps
+pg_isready                      # expect "accepting connections"
+createdb pierplace              # creates the database (once)
 ```
 
 **Beginner scenario:** think of this as unlocking the school building and
-turning the lights on. The first run downloads Postgres (a few hundred MB, so
-go make tea). Afterwards it starts in seconds.
+turning the lights on.
 
-**What success looks like:** the `ps` command shows a row named `backend-db-1`
-with status *Up* and port `5432`.
+**What success looks like:** `pg_isready` prints `... accepting connections` and
+`createdb` finishes silently.
 
 **If it fails:**
 
-- `no configuration file provided` → you forgot `-f backend/docker-compose.yml`
-  or you are not in the repo root.
+- `pg_isready` says no response → the server is not running. Start it with
+  `sudo systemctl start postgresql`.
+- `database "pierplace" already exists` → fine, carry on.
 - Port already in use → something else sits on 5432. Stop it, or ask for help
   changing the port.
 
@@ -75,17 +75,19 @@ your computer. Takes a few minutes; silence is normal.
 
 ```sh
 cd backend
-export PIERPLACE_DATABASE_URL=postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace
-export PIERPLACE_JWT_SECRET=dev-secret
+cp .env.example .env      # then edit PIERPLACE_DATABASE_URL if needed
 .venv/bin/python -m app.seed
 ```
 
 **Beginner scenario:** the building exists but every room is empty. Seeding is
 moving day — it builds all the tables in the database, then places 2 floors,
 24 game tables, 240 seats, 25 XP levels, staff roles, and the weekly event
-timetable. The two `export` lines are just telling the code *where the
-database lives* and *what password to stamp login tokens with* (dev-only
-values, never production).
+timetable. The `.env` file tells the code *where the database lives* and *what
+password to stamp login tokens with* (dev-only values, never production); it is
+loaded automatically. It defaults to a native TCP URL
+(`postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace`). On
+Debian/Ubuntu you can instead use the passwordless unix socket:
+`postgresql+asyncpg://$(whoami)@/pierplace?host=/var/run/postgresql`.
 
 **What success looks like:** it prints `seeded`.
 
@@ -100,10 +102,10 @@ values, never production).
 ## 4. Prove the database is wired right (the big checkpoint)
 
 ```sh
-docker compose -f backend/docker-compose.yml exec db psql -U pierplace -c "\dt"
-docker compose -f backend/docker-compose.yml exec db psql -U pierplace -c "select count(*) from seats;"
-docker compose -f backend/docker-compose.yml exec db psql -U pierplace -c "select count(*) from game_tables;"
-docker compose -f backend/docker-compose.yml exec db psql -U pierplace -c "select count(*) from levels;"
+psql -d pierplace -c "\dt"
+psql -d pierplace -c "select count(*) from seats;"
+psql -d pierplace -c "select count(*) from game_tables;"
+psql -d pierplace -c "select count(*) from levels;"
 ```
 
 **Beginner scenario:** you are the inspector walking the building with a
@@ -140,19 +142,16 @@ seat thresholds. It doesn't touch the database, so it runs in under a second.
 ## 6. Start the server (keep this terminal open!)
 
 ```sh
-export PIERPLACE_DATABASE_URL=postgresql+asyncpg://pierplace:pierplace@localhost:5432/pierplace
-export PIERPLACE_JWT_SECRET=dev-secret
-.venv/bin/uvicorn app.main:app --reload --port 8000
+.venv/bin/python -m app
 ```
 
 **Beginner scenario:** you flip the "OPEN" sign on the school reception desk.
-The API now listens at `localhost:8000` on your own machine. `--reload` means
-it restarts itself whenever you edit the code — handy while building.
+One command now starts *both* the REST API and the presence WebSocket on
+`localhost:8000`. Set `PIERPLACE_RELOAD=0` to disable auto-reload.
 
 **What success looks like:** logs ending in `Uvicorn running on
-http://127.0.0.1:8000`. Leave this terminal alone and open a **second
-terminal** for the rest. (Yes, the `export` lines are repeated — each terminal
-window needs its own copy.)
+http://0.0.0.0:8000`. Leave this terminal alone and open a **second
+terminal** for the rest.
 
 ---
 
@@ -183,7 +182,7 @@ Staff powers (creating runs) need the `coding_mentor` role, so promote tester1
 and log in again to get a wristband with the new powers:
 
 ```sh
-docker compose -f backend/docker-compose.yml exec db psql -U pierplace \
+psql -d pierplace \
   -c "update users set role='coding_mentor' where username='tester1';"
 
 TOKEN1=$(curl -s -X POST localhost:8000/auth/login -H 'Content-Type: application/json' \
@@ -284,14 +283,14 @@ the lock system doing its job.)
 ```sh
 # Stop the server: press Ctrl+C in its terminal.
 # Stop the database (keeps all data for next time):
-docker compose -f backend/docker-compose.yml down
+sudo systemctl stop postgresql
 # Full wipe (fresh start next time — deletes ALL data):
-docker compose -f backend/docker-compose.yml down -v
+dropdb pierplace && createdb pierplace
 ```
 
-**Beginner scenario:** closing up for the night. `down` locks the doors but
-keeps everything inside; `down -v` also bulldozes the building, so next time
-you start from step 3 with an empty plot.
+**Beginner scenario:** closing up for the night. Stopping the service locks the
+doors but keeps everything inside; dropping and recreating the database also
+bulldozes the building, so next time you start from step 3 with an empty plot.
 
 ---
 

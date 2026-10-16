@@ -53,7 +53,7 @@ function Help({ onClose, inCampus = false }) {
           {
             Icon: MessageCircle,
             title: "A friendly face, a shared idea.",
-            text: "Walk over to Mr Jonathan, Mr Femi, Mr Ezekiel, Mr Emmanuel, Mr Itunu, the Facility Manager, or Kayode, the male rep. Mentors move independently between floors, so look for them where they are. Table chat has separate histories and clearly labeled simulated replies.",
+            text: "Walk over to Mr Jonathan, Mr Femi, Mr Ezekiel, Mr Emmanuel, or the Facility Manager. Mentors move independently between floors, so look for them where they are. Table chat has separate histories and clearly labeled simulated replies.",
           },
           {
             Icon: LaptopIcon,
@@ -88,6 +88,7 @@ function Help({ onClose, inCampus = false }) {
 }
 export default function App() {
   const [session, setSession] = useState(null);
+  const [playerId, setPlayerId] = useState(null);
   const [page, setPage] = useState("home");
   const [dialog, setDialog] = useState(null);
   const [error, setError] = useState("");
@@ -213,6 +214,9 @@ export default function App() {
             setPage("home");
           }}
           onSeatChange={seatChanged}
+          onPresence={(message) => {
+            if (message?.type === "welcome" && message.id) setPlayerId(message.id);
+          }}
           onToast={notify}
         />
       )}
@@ -239,6 +243,7 @@ export default function App() {
         <Chat
           key={dialog.tableId}
           profile={session.profile}
+          playerId={playerId}
           tableId={dialog.tableId}
           onClose={close}
         />

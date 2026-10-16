@@ -1,20 +1,9 @@
-Design a game for me called PierPlace. It's a 2d virtual world game. This is the format.
-
-When you open the web app, you see the simple game screen. Image in gamescreen.png, you click take test, then it takes you to the test page.
-
-in the test page you take a very simple visual test to determine if you;d be admitted to the virtual world but you'd first design your character, design id card with real picture uplod nd you can choose to wear your idcard or not.
-
-Once you pass the test, you'd be in a building, map structure provided in building.png. They are two floors, the building.png representing each floors. In the building, you can see tables with chairs around and clicking on the chair would show a side button that you can click to show a chatbox (the chatbox is for the table you are sitting at, so each table can have their chatbox).
-
-In the virtualc world, add NPCs (non-player characters) that stand around. Clicking on an NPC would make them say random things. The NPC's are "Mr Jonathan", "Mr Femi", "Mr Ezekiel", "Facity Manager", "Kayode, the male rep".
-
-The virtual world huds are:
-- a laptop icon that reveal the playable character laptop. This laptop is where they'd be using to learn. The laptop look like ubuntu and the body should look like a real laptop.
-
-
-Other notes:
-- players should be able to move around my clicking the place, if they click a chair, show a "sit" button that they can click nd let them sit on the chair they clicked. The bean bag, mentor cubicle and other objects should have interactions button that popup when clicked.
-
-
-IMPORTANT:
-- FOCUS ON THE GAME UI DESIGN, IT SHOULD BE SMOOTH AND BEAUTIFUL. A NICE 2D PIXEL ART STYLE. USE EXISTING LIBRARIES OR FRAMEWORKS IF IT HELPS YOU TO DO A CLEAN JOB. THE CODE SHOULD BE CLEAN, MODULAR AND EASY TO MAINTAIN SO THAT IT CAN BE SCALED UP IN THE FUTURE AND I CAN REVIEW THE CODE.
+- read and understand the code in backend, docs, and server folder
+- understand the frontend code in src
+- avoid e2e tests, I'd test myself henceforths
+- ignore any docker and build the app to run bare metal. 
+- add a lesson icon and it should open a coding training app. on the training app home page, they should be quest 1, quest 2, quest 3 and checkpoint.
+- each quest have 5 coding questions each nd checkpoint is an examination containing random 3 questions, 1 from each quest. 
+- when you click a quest, like quest 1 - you'd see five questions
+- clicking on a questions, like question 1 for example will open a side by side, coding questions and a code editor on the right side, 
+    you input the solution and submit it, the states of your submission shoud be synced with the database

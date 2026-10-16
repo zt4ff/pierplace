@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PixelWorld, drawPreview } from '../src/world.js';
 import { NPC_LINES } from '../src/state.js';
 
-const NPC_NAMES = ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Facility Manager', 'Kayode, the male rep', 'Mr Emmanuel', 'Mr Itunu'];
+const NPC_NAMES = ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Facility Manager', 'Mr Emmanuel'];
 
 class FakeEventTarget {
   listeners = new Map();
@@ -218,13 +218,13 @@ test('string accessories remain visible on NPCs and player profiles', t => {
   assert.equal(hasFill(ctx, x - 5, y - 21, 10, 11, '#c7a15a'), false);
 });
 
-test('floors share seven unique NPCs with correctly named, copied interactions', t => {
+test('floors share five unique NPCs with correctly named, copied interactions', t => {
   const h = createHarness(t);
   h.world.setActive(true);
   for (const floor of [1, 2]) {
     h.world.setFloor(floor);
     const npcs = h.world.layout.objects.filter(object => object.type === 'npc');
-    const names = floor === 1 ? NPC_NAMES.slice(0, 5) : NPC_NAMES.slice(5);
+    const names = floor === 1 ? NPC_NAMES.slice(0, 4) : NPC_NAMES.slice(4);
     assert.equal(npcs.length, names.length);
     assert.deepEqual(npcs.map(object => object.name), names);
     assert.deepEqual(npcs.map(object => object.label), names);
@@ -885,43 +885,26 @@ test('camera cleanup releases capture, disconnects resize observers and removes 
   assert.equal(h.win.removed.length, 4);
 });
 
-test('mentors have individual home seats and Kayode occupies only the downstairs seat nine', t => {
+test('mentors keep their home seats and the former rep seat is free', t => {
   const h = createHarness(t);
   h.world.setActive(true);
   for (const floor of [1, 2]) {
     h.world.setFloor(floor);
     const mentors = h.world.actors.filter(actor => actor.kind === 'mentor' && actor.object.floor === floor);
-    assert.equal(mentors.length, floor === 1 ? 3 : 2);
-    assert.deepEqual(mentors.map(actor => actor.object.x), floor === 1 ? [105, 175, 245] : [105, 175]);
+    assert.equal(mentors.length, floor === 1 ? 3 : 1);
+    assert.deepEqual(mentors.map(actor => actor.object.x), floor === 1 ? [105, 175, 245] : [105]);
     assert.ok(mentors.every(actor => actor.object.y === 566 && actor.object.seated && actor.state === 'home'));
     assert.ok(mentors.every(actor => actor.wait >= actor.schedule.seated[0] && actor.wait <= actor.schedule.seated[1]));
     assert.equal(new Set(mentors.map(actor => actor.object.idlePhase)).size, mentors.length);
   }
   h.world.setFloor(1);
-  const chair = h.world.layout.objects.find(object => object.id === 'floor-1-west-1-chair-0-9');
-  const kayode = h.world.layout.objects.find(object => object.name === 'Kayode, the male rep');
-  assert.equal(chair.occupantId, kayode.id);
-  assert.equal(chair.action, 'Talk to Kayode');
-  assert.match(chair.label, /occupied by Kayode/);
-  assert.equal(kayode.seated, true);
-  assert.equal(kayode.x, chair.x);
-  assert.equal(kayode.y, chair.y + 6);
-  assert.equal(kayode.direction, chair.facing);
-  assert.equal(kayode.tableId, chair.tableId);
-  assert.equal(h.world.interact(chair), false);
-  h.pointer('pointerdown', chair.x, chair.y);
-  assert.equal(h.selections.at(-1).id, kayode.id);
-  h.world.clearSelection();
-  const position = { x: kayode.x, y: kayode.y };
-  h.world.setFloor(2);
-  const upstairsChair = h.world.layout.objects.find(object => object.id === 'floor-2-west-1-chair-0-9');
-  assert.equal(upstairsChair.occupantId, undefined);
-  assert.ok(h.world.interact(upstairsChair));
-  for (let i = 0; i < 220; i++) h.world._updateActors(0.05);
-  h.world.setFloor(1);
-  assert.equal(h.world.layout.objects.find(object => object.id === kayode.id), kayode);
-  assert.deepEqual({ x: kayode.x, y: kayode.y }, position);
-  assert.equal(kayode.seated, true);
+  const objects = h.world.layout.objects;
+  assert.equal(objects.some(object => object.name === 'Kayode, the male rep'), false);
+  assert.equal(objects.some(object => object.name === 'Mr Itunu'), false);
+  const chair = objects.find(object => object.id === 'floor-1-west-1-chair-0-9');
+  assert.equal(chair.occupantId, undefined);
+  assert.equal(chair.action, 'Sit down');
+  assert.ok(h.world.interact(chair));
 });
 
 test('mentor inspection/return routes and manager roaming stay collision-free and do not pan the camera', t => {
@@ -1045,9 +1028,9 @@ test('reduced motion fixes foliage and idle poses, leaves sway no more than one 
 
 function assertUniqueActors(world) {
   const residents = [...world.floors.values()].flatMap(context => context.layout.objects.filter(object => object.type === 'npc'));
-  assert.equal(residents.length, 7);
-  assert.equal(new Set(residents.map(object => object.id)).size, 7);
-  assert.equal(new Set(residents.map(object => object.name)).size, 7);
+  assert.equal(residents.length, NPC_NAMES.length);
+  assert.equal(new Set(residents.map(object => object.id)).size, NPC_NAMES.length);
+  assert.equal(new Set(residents.map(object => object.name)).size, NPC_NAMES.length);
   for (const actor of world.actors) {
     assert.equal(residents.filter(object => object === actor.object).length, 1);
     assert.ok(world.floors.get(actor.object.floor).layout.objects.includes(actor.object));
@@ -1134,7 +1117,7 @@ test('individual schedules keep Jonathan mostly seated and Femi more active', t 
 });
 
 test('every mentor transfers only at the stairs, stays unique, visits and returns to their own home', t => {
-  for (const name of ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Mr Emmanuel', 'Mr Itunu']) {
+  for (const name of ['Mr Jonathan', 'Mr Femi', 'Mr Ezekiel', 'Mr Emmanuel']) {
     const { world } = createHarness(t, { camera: true });
     world.setActive(true);
     const actor = world.actors.find(actor => actor.object.name === name);
@@ -1203,36 +1186,24 @@ test('every mentor transfers only at the stairs, stays unique, visits and return
   }
 });
 
-test('new mentors have distinct appearances, dialogue and behavior and reachable conversations', t => {
+test('upstairs mentors have distinct appearances, dialogue and reachable conversations', t => {
   const { world } = createHarness(t, { reducedMotion: true });
   world.setFloor(2);
-  const emmanuel = world.actors.find(actor => actor.object.name === 'Mr Emmanuel');
-  const itunu = world.actors.find(actor => actor.object.name === 'Mr Itunu');
-  assert.equal(emmanuel.object.profile.hair, '#e6ded0');
-  assert.equal(emmanuel.object.profile.wearId, 'glasses');
-  assert.equal(itunu.object.profile.wearId, 'headphones');
-  assert.notEqual(emmanuel.object.profile.skin, itunu.object.profile.skin);
-  assert.notEqual(emmanuel.object.profile.shirt, itunu.object.profile.shirt);
-  assert.ok(emmanuel.schedule.seated[0] > itunu.schedule.seated[1]);
-  assert.ok(emmanuel.schedule.inspect[0] > itunu.schedule.inspect[1]);
-  assert.ok(itunu.schedule.stops > emmanuel.schedule.stops);
-  for (const actor of [emmanuel, itunu]) {
-    assert.equal(actor.object.profile.name, actor.object.name);
-    assert.ok(NPC_LINES[actor.object.name].length >= 3);
-    assert.ok(world.interact(actor.object));
-    assertSafeRoute(world);
-    world.pending = null;
-    world.path = [];
-    world.clearSelection();
-    actor.wait = 0;
-    world._updateActors(0.05);
-    finishActorRoute(world, actor);
-    assert.ok(world.interact(actor.object));
-    assertSafeRoute(world);
-    world.pending = null;
-    world.path = [];
-    world.clearSelection();
-  }
+  const actor = world.actors.find(person => person.object.name === 'Mr Emmanuel');
+  assert.equal(actor.object.profile.hair, '#e6ded0');
+  assert.equal(actor.object.profile.wearId, 'glasses');
+  assert.equal(actor.object.profile.name, actor.object.name);
+  assert.ok(NPC_LINES[actor.object.name].length >= 3);
+  assert.ok(world.interact(actor.object));
+  assertSafeRoute(world);
+  world.pending = null;
+  world.path = [];
+  world.clearSelection();
+  actor.wait = 0;
+  world._updateActors(0.05);
+  finishActorRoute(world, actor);
+  assert.ok(world.interact(actor.object));
+  assertSafeRoute(world);
   assert.equal(new Set(Object.values(NPC_LINES).flat()).size, Object.values(NPC_LINES).flat().length);
 });
 
@@ -1331,3 +1302,26 @@ test('onObjectsChange accepts only functions and remains optional during transfe
     assert.equal(actor.object.floor, 2);
   }
 });
+
+test('remote players render by name on their own floor and ignore malformed state', t => {
+  const { world, ctx } = createHarness(t);
+  world.setRemotes([
+    { id: 'r1', profile: { name: 'Remote Ada', skin: '#704a36', hair: '#272830', shirt: '#788ead' }, x: 200, y: 300, floor: 1, seated: true, tableId: 'floor-1-west-1' },
+    { id: 'r2', profile: { name: 'Upstairs Bob', skin: '#a06b48', hair: '#342c30', shirt: '#be8c68' }, x: 120, y: 140, floor: 2 },
+    { id: 'r3', profile: { name: 'No Position' }, floor: 1 },
+    { id: 'r4', profile: { name: 'Bad Coords' }, x: 'nope', y: null, floor: 1 },
+  ]);
+  world.setFloor(1);
+  world.setPlayer({ name: 'Kayode' });
+  const names = ctx.texts.map(entry => entry.value);
+  assert.ok(names.includes('Remote Ada'), 'same-floor remote is drawn');
+  assert.ok(names.includes('Kayode'), 'local player still drawn');
+  assert.equal(names.includes('Upstairs Bob'), false, 'other-floor remote is hidden');
+  assert.equal(names.includes('No Position'), false, 'remote without coordinates is skipped');
+  assert.equal(names.includes('Bad Coords'), false, 'remote with non-finite coordinates is skipped');
+  assert.equal(world.remotes.size, 4, 'invalid remotes stay tracked but unrendered');
+
+  world.setRemotes(null);
+  assert.equal(world.remotes.size, 0);
+});
+

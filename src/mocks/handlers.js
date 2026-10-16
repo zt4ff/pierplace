@@ -21,12 +21,23 @@ function validProfile(profile) {
     (profile.photo === null || (typeof profile.photo === 'string' && profile.photo.length < 500000 && /^data:image\/(png|jpeg|webp);base64,/.test(profile.photo)));
 }
 const error = (message, status = 400) => HttpResponse.json({ message }, { status });
+// The browser client calls the backend origin directly (`/session`) while the
+// Vite dev proxy and tests use the `/api` prefix. Match either form and expose
+// capture groups as path params so resolvers keep using `params.id`.
+const route = (pattern, keys = []) => ({ request }) => {
+  const pathname = new URL(request.url, 'http://localhost').pathname.replace(/^\/api(?=\/|$)/, '');
+  const match = pattern.exec(pathname);
+  if (!match) return false;
+  const params = {};
+  keys.forEach((key, index) => { params[key] = match[index + 1]; });
+  return { matches: true, params };
+};
 const REPLIES = ['Hey! Glad you pulled up a chair. What are you learning today?', 'Small steps count. Have you opened the campus laptop yet?', 'I like that idea. Write it down in Notes so you can come back to it.'];
-export function createHandlers(store, latency = 220) {
+export function createHandlers(store, latency = 220, { chat = true } = {}) {
   const sessionResponse = () => HttpResponse.json({ ...store.get(), persistent: store.isPersistent() });
-  return [
-    http.get('*/api/session', async () => { await delay(latency); return sessionResponse(); }),
-    http.post('*/api/admission', async ({ request }) => {
+  const handlers = [
+    http.get(route(/^\/session$/), async () => { await delay(latency); return sessionResponse(); }),
+    http.post(route(/^\/admission$/), async ({ request }) => {
       await delay(latency);
       const { profile, answers } = await request.json();
       if (!validProfile(profile)) return error('Please check your profile details.');
@@ -34,7 +45,7 @@ export function createHandlers(store, latency = 220) {
       store.update({ profile: { ...profile, name: profile.name.trim() }, admitted: true });
       return sessionResponse();
     }),
-    http.put('*/api/profile', async ({ request }) => {
+    http.put(route(/^\/profile$/), async ({ request }) => {
       await delay(latency);
       const profile = await request.json();
       if (!store.get().admitted) return error('Get your campus pass first.', 403);
@@ -42,14 +53,14 @@ export function createHandlers(store, latency = 220) {
       store.update({ profile: { ...profile, name: profile.name.trim() } });
       return sessionResponse();
     }),
-    http.put('*/api/floor', async ({ request }) => {
+    http.put(route(/^\/floor$/), async ({ request }) => {
       await delay(latency);
       const { floor } = await request.json();
       if (![1, 2].includes(floor)) return error('Choose floor 1 or floor 2.');
       store.update({ floor });
       return HttpResponse.json({ floor });
     }),
-    http.post('*/api/lessons/:id', async ({ params }) => {
+    http.post(route(/^\/lessons\/([^/]+)$/, ['id']), async ({ params }) => {
       await delay(latency);
       if (!['welcome', 'web', 'design'].includes(params.id)) return error('Lesson not found.', 404);
       if (!store.get().admitted) return error('Get your campus pass first.', 403);
@@ -57,13 +68,17 @@ export function createHandlers(store, latency = 220) {
       store.update({ lessons });
       return HttpResponse.json({ lessons });
     }),
-    http.get('*/api/tables/:id/messages', async ({ params }) => {
+  ];
+  // Table chat is owned by the backend so messages persist in Postgres. Tests
+  // still exercise the mock history by keeping `chat: true` (the default).
+  if (chat) handlers.push(
+    http.get(route(/^\/tables\/([^/]+)\/messages$/, ['id']), async ({ params }) => {
       await delay(latency);
       if (!validTable(params.id)) return error('Table not found.', 404);
       if (!store.get().admitted) return error('Get your campus pass first.', 403);
       return HttpResponse.json({ messages: store.get().chats[params.id] || [] });
     }),
-    http.post('*/api/tables/:id/messages', async ({ params, request }) => {
+    http.post(route(/^\/tables\/([^/]+)\/messages$/, ['id']), async ({ params, request }) => {
       await delay(latency + 250);
       if (!validTable(params.id)) return error('Table not found.', 404);
       const current = store.get();
@@ -77,5 +92,6 @@ export function createHandlers(store, latency = 220) {
       store.update({ chats: { ...current.chats, [params.id]: next } });
       return HttpResponse.json({ messages: next }, { status: 201 });
     }),
-  ];
+  );
+  return handlers;
 }

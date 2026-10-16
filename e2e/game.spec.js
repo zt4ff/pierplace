@@ -114,14 +114,10 @@ test("seating gates chat, each table is separate, NPCs speak, both floors work",
   await toolkit(page);
   await expect(chat).toBeEnabled();
   await chat.click();
-  await page.getByLabel("Your message").fill("Hello from table A");
+  const message = `Hello from table A ${Date.now()}`;
+  await page.getByLabel("Your message").fill(message);
   await page.getByRole("button", { name: "Send message" }).click();
-  await expect(
-    page.getByText("Hello from table A", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Campus buddy · mock", { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText(message, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Close popup" }).click();
   await toolkit(page);
   await page
@@ -155,11 +151,45 @@ test("seating gates chat, each table is separate, NPCs speak, both floors work",
   await expect(
     page.getByText("Every connection starts with hello."),
   ).toBeVisible();
-  await expect(
-    page.getByText("Hello from table A", { exact: true }),
-  ).toHaveCount(0);
+  await expect(page.getByText(message, { exact: true })).toHaveCount(0);
   expect(failures).toEqual([]);
 });
+test("other players appear on the map when they connect", async ({ page }) => {
+  const failures = errors(page);
+  await returningMember(page);
+  const campus = page.locator(".game-campus");
+  await expect(campus).toHaveAttribute("data-remote-players", "0");
+  const welcomed = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+        window.__remoteWs = ws;
+        ws.onopen = () =>
+          ws.send(
+            JSON.stringify({
+              type: "join",
+              profile: {
+                name: "Remote Rita",
+                skin: "#a06b48",
+                hair: "#342c30",
+                shirt: "#be8c68",
+              },
+              floor: 1,
+            }),
+          );
+        ws.onmessage = (event) => {
+          if (JSON.parse(event.data).type === "welcome") resolve(true);
+        };
+        ws.onerror = () => resolve(false);
+      }),
+  );
+  expect(welcomed).toBe(true);
+  await expect(campus).toHaveAttribute("data-remote-players", "1");
+  await page.evaluate(() => window.__remoteWs.close());
+  await expect(campus).toHaveAttribute("data-remote-players", "0");
+  expect(failures).toEqual([]);
+});
+
 test("Ubuntu laptop opens functional lessons, notes, terminal and files", async ({
   page,
 }) => {

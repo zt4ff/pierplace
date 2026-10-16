@@ -27,9 +27,11 @@ import "../laptop.css";
 import PdfViewer from "./PdfViewer.jsx";
 
 const CodeEditor = lazy(() => import("./CodeEditor.jsx"));
+const TrainingApp = lazy(() => import("./Training.jsx"));
 const DESKTOP_APPS = [
 	{ id: "browser", title: "Browser", Icon: Globe, color: "#a9c9ed" },
 	{ id: "editor", title: "Code editor", Icon: Code2, color: "#b7decf" },
+	{ id: "training", title: "Training", Icon: BookOpen, color: "#e7ad75" },
 	{ id: "music", title: "Music", Icon: Headphones, color: "#f3d98b" },
 	{ id: "pdf", title: "PDF Reader", Icon: FileText, color: "#e1dbe8" },
 ];
@@ -459,6 +461,17 @@ export default function Laptop({
 										}
 									>
 										<CodeEditor />
+									</Suspense>
+								)}
+								{app === "training" && (
+									<Suspense
+										fallback={
+											<p role="status">
+												Loading training…
+											</p>
+										}
+									>
+										<TrainingApp profile={profile} />
 									</Suspense>
 								)}
 								{app === "music" && <MusicWindow />}
