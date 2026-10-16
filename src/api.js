@@ -1,5 +1,7 @@
+import { API_BASE } from './config.js';
+
 async function request(path, { signal, ...options } = {}) {
-  const response = await fetch(`/api${path}`, { ...options, signal, headers: { 'Content-Type': 'application/json', ...options.headers } });
+  const response = await fetch(`${API_BASE}${path}`, { ...options, signal, headers: { 'Content-Type': 'application/json', ...options.headers } });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || `Request failed (${response.status}).`);
   return result;

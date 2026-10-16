@@ -1,12 +1,10 @@
-// Connects to the backend presence WebSocket (FastAPI `app/ws/presence.py`,
-// served on the same origin as the REST API). Tracks other players in real time.
+import { PRESENCE_URL } from './config.js';
+
+// Connects to the backend presence WebSocket (FastAPI `app/ws/presence.py`).
+// Tracks other players in real time. The URL follows the REST API base
+// (VITE_API_BASE) and can be overridden with VITE_PRESENCE_URL.
 function defaultUrl() {
-  if (import.meta.env?.VITE_PRESENCE_URL) return import.meta.env.VITE_PRESENCE_URL;
-  if (typeof window !== 'undefined' && window.location) {
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    return `${protocol}://${window.location.host}/ws`;
-  }
-  return 'ws://localhost:8000/ws';
+  return PRESENCE_URL;
 }
 
 /** Socket for one table's chat room, on the same origin as presence. */

@@ -1,13 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const backend = process.env.VITE_API_BASE || 'https://pierplace.onrender.com';
+
 const proxy = {
   '/api': {
-    target: 'http://localhost:8000',
+    target: backend,
     changeOrigin: true,
+    secure: true,
     rewrite: (path) => path.replace(/^\/api/, ''),
   },
-  '/ws': { target: 'ws://localhost:8000', ws: true },
+  '/ws': { target: backend.replace(/^http/, 'ws'), ws: true, secure: true },
 };
 
 export default defineConfig({

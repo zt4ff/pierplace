@@ -21,8 +21,10 @@ npm install
 npm run dev
 ```
 
-Open the localhost URL shown by Vite. Vite proxies `/api` and `/ws` to the
-backend on `:8000`. The database URL is read from `backend/.env` (see
+Open the localhost URL shown by Vite. The client calls the deployed backend at
+`https://pierplace.onrender.com` by default (override with `VITE_API_BASE`, and
+the WebSocket with `VITE_PRESENCE_URL`). Vite also proxies `/api` and `/ws` to
+that same backend. The database URL is read from `backend/.env` (see
 `backend/.env.example`); no Docker is used.
 
 ```sh
@@ -51,13 +53,14 @@ npm run preview
 
 ## Mock server and storage
 
-MSW intercepts `/api/session`, `/api/admission`, `/api/profile`, `/api/floor`,
-and `/api/lessons/*` in both development and preview builds. Profiles, ID
+MSW intercepts `/session`, `/admission`, `/profile`, `/floor`,
+and `/lessons/*` (with or without an `/api` prefix) in both development and
+preview builds. Profiles, ID
 photos, admission, floor, and completed lessons are stored on this
 browser/device. Notes and editor code each have separate local storage entries.
 Photos are resized locally and are not uploaded to an external service.
 
-Table chat is **not** mocked: `/api/tables/:id/messages` is served by the
+Table chat is **not** mocked: `/tables/:id/messages` is served by the
 backend and persisted in PostgreSQL, scoped to a physical table.
 
 ## Structure
@@ -95,10 +98,10 @@ to the `users` table (character name and colours), their movement is broadcast
 to everyone else in real time, and table chat messages are stored in
 `chats`/`messages`.
 
-- Endpoint: `ws://localhost:8000/ws` (through Vite: `ws://localhost:5173/ws`)
+- Endpoint: `wss://pierplace.onrender.com/ws` (local backend: `ws://localhost:8000/ws`)
 - Client → server: `join` (`{ profile, floor }`), `move` (`{ x, y, seated, tableId, floor }`)
 - Server → client: `welcome` (`{ id, profile, players }`), `joined`, `moved`, `left`
-- Table chat REST: `GET/POST /api/tables/:tableId/messages`
+- Table chat REST: `GET/POST /tables/:tableId/messages`
 
 The campus connects automatically and shows other players on the map. Override
 the socket URL with `VITE_PRESENCE_URL`. Events are passed to the optional
