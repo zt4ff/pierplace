@@ -28,9 +28,9 @@ Otherwise use a TCP URL like
 ### Live lobby (presence)
 
 - `GET /health` — liveness.
-- `WS /ws` — players send `{type:"join", profile, floor}` then
-  `{type:"move", x, y, seated, tableId, floor}`. The server persists the
-  character to `users` and fans out `welcome` / `joined` / `moved` / `left`.
+- `WS /ws?token=<JWT>&run_id=<id>` — authenticated, read-only presence relay
+  (see "Realtime presence" below). No profile/position writes over the socket.
+- `WS /ws/chat/{table_id}` — table chat room (history + live messages; unauthenticated).
 - `GET/POST /tables/{table_id}/messages` — table chat persisted in
   `chats`/`messages`, isolated per table.
 
@@ -65,3 +65,7 @@ with `/health` checks. Apply via Dashboard → New → Blueprint on this repo.
 - WS events (relay only, no writes): piscine.started, event.warned/started/closed,
   lock.applied, seat.ejected, chat.message, xp.awarded, level.up, battery.low,
   trigger.created, meeting.called, memo.sent, food.on_floor, defense.opened/decided.
+
+## Realtime presence (`/ws`)
+
+`ws://<host>/ws?token=<JWT>&run_id=<id>` — read-only broadcast relay (see `app/ws/presence.py`). Invalid/unknown token closes with code `4401`. On connect: `{type:"snapshot", players:[...]}` (each player: `id`, `user`, `floor`, `seat`, `beanbag`, `lock`, `profile`), then `presence.joined` to others; `presence.moved` after each successful `POST /location/move`; `presence.left` on disconnect. Client messages other than `{type:"ping"}` get `{type:"error",reason:"read_only_socket"}`. Fan-out is in-process memory, so run a single worker (or add a shared pub/sub) for now.
