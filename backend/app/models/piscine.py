@@ -45,6 +45,10 @@ class EventTemplate(Base):
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     lock_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
     warn_minutes_before: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
+    day_of_week: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 0=Monday, 1=Tuesday, etc.
+    hour: Mapped[int | None] = mapped_column(Integer, nullable=True)      # Hour in 24-hour format
+    minute: Mapped[int | None] = mapped_column(Integer, nullable=True)     # Minute
+    timezone: Mapped[str] = mapped_column(String(32), nullable=False, default="UTC")
 
 
 class EventInstance(Base):

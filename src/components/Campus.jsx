@@ -16,6 +16,7 @@ import {
   MapPin,
   Menu,
   MessageCircle,
+  Megaphone,
   Minus,
   Move,
   Pause,
@@ -48,6 +49,7 @@ export default function Campus({
   onChat,
   onHelp,
   onHome,
+  onAnnouncements,
   onToast,
   onSeatChange,
   onCameraChange,
@@ -578,7 +580,17 @@ export default function Campus({
           >
             <Avatar profile={profile} className="game-avatar" />
           </button>
+
+          <button
+          className="game-button game-announcements-button"
+          type="button"
+          aria-label="Announcements"
+          onClick={() => onAnnouncements?.()}
+        >
+          <Megaphone size={20} aria-hidden="true" />
+        </button>
         </div>
+        
         {popover === "profile" && (
           <section
             className="game-popover game-profile-popover"
