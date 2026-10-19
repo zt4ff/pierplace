@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const backend = process.env.VITE_API_BASE || 'https://pierplace.onrender.com';
+// const backend = process.env.VITE_API_BASE || 'https://pierplace.onrender.com';
+const backend = "http://0.0.0.0:8000/"
 
 const proxy = {
   '/api': {

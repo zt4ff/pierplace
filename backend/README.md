@@ -66,6 +66,8 @@ with `/health` checks. Apply via Dashboard → New → Blueprint on this repo.
   lock.applied, seat.ejected, chat.message, xp.awarded, level.up, battery.low,
   trigger.created, meeting.called, memo.sent, food.on_floor, defense.opened/decided.
 
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
 ## Realtime presence (`/ws`)
 
 `ws://<host>/ws?token=<JWT>&run_id=<id>` — read-only broadcast relay (see `app/ws/presence.py`). Invalid/unknown token closes with code `4401`. On connect: `{type:"snapshot", players:[...]}` (each player: `id`, `user`, `floor`, `seat`, `beanbag`, `lock`, `profile`), then `presence.joined` to others; `presence.moved` after each successful `POST /location/move`; `presence.left` on disconnect. Client messages other than `{type:"ping"}` get `{type:"error",reason:"read_only_socket"}`. Fan-out is in-process memory, so run a single worker (or add a shared pub/sub) for now.
