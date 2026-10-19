@@ -15,6 +15,7 @@ import Onboarding from "./components/Onboarding.jsx";
 import Laptop from "./components/Laptop.jsx";
 import { MusicProvider } from "./components/Music.jsx";
 import Chat from "./components/Chat.jsx";
+import Announcements from "./components/Announcements.jsx";
 import { Brand, Modal } from "./components/shared.jsx";
 import { api } from "./api.js";
 
@@ -94,6 +95,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
   const [toast, setToast] = useState("");
+  const [announcementsOpen, setAnnouncementsOpen] = useState(false);
   const toastTimer = useRef(null);
   const floorQueue = useRef(Promise.resolve());
   const notify = useCallback((message) => {
@@ -208,6 +210,7 @@ export default function App() {
           onProfile={() => setDialog({ type: "profile" })}
           onLaptop={() => setDialog({ type: "laptop" })}
           onChat={(tableId) => setDialog({ type: "chat", tableId })}
+          onAnnouncements={() => setAnnouncementsOpen(true)}
           onHelp={() => setDialog({ type: "help" })}
           onHome={() => {
             setDialog(null);
@@ -215,7 +218,8 @@ export default function App() {
           }}
           onSeatChange={seatChanged}
           onPresence={(message) => {
-            if (message?.type === "welcome" && message.id) setPlayerId(message.id);
+            if (message?.type === "welcome" && message.id)
+              setPlayerId(message.id);
           }}
           onToast={notify}
         />
@@ -247,6 +251,9 @@ export default function App() {
           tableId={dialog.tableId}
           onClose={close}
         />
+      )}
+      {announcementsOpen && (
+        <Announcements onClose={() => setAnnouncementsOpen(false)} />
       )}
       {toast && (
         <div className="toast" role="status">
