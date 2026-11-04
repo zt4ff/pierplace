@@ -27,10 +27,17 @@ async def current_user(
     return user
 
 
+async def get_user_by_token(session: AsyncSession, token: str) -> User | None:
+    try:
+        payload = decode_token(token)
+    except Exception:
+        return None
+    user = (await session.execute(select(User).where(User.id == payload["sub"]))).scalar_one_or_none()
+    return user
+
+
 def require_roles(*roles: str):
     async def checker(user: User = Depends(current_user)) -> User:
-        # mr_jonathan is modeled as a coding_mentor with unrestricted flag row;
-        # keep the role check simple — quota logic lives in meeting service.
         if user.role not in roles and not (user.role == "coding_mentor" and "mr_jonathan" in roles):
             raise HTTPException(status_code=403, detail={"reason": "wrong_role"})
         return user

@@ -129,6 +129,11 @@
 .game-campus .game-music-button[aria-pressed="true"] {
     background: #e8eddf;
 }
+.game-campus .game-announcements-button {
+    width: 48px;
+    height: 48px;
+    padding: 3px;
+}
 .game-campus .game-popover {
     position: absolute;
     width: 300px;
@@ -446,4 +451,61 @@
         background: #fffcf0;
         backdrop-filter: none;
     }
+}
+
+.announcements-panel {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    bottom: 14px;
+    width: 380px;
+    max-width: 90vw;
+    max-height: 90vh;
+    z-index: 200;
+    overflow-y: auto;
+    background: #fffcf0e8;
+    backdrop-filter: blur(12px);
+    border: 1px solid #fffdf3b3;
+    border-radius: 12px;
+    box-shadow: 0 3px 16px #342b2026;
+    padding: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.announcements-panel .modal-close {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 201;
+    background: transparent;
+    border: none;
+    padding: 4px;
+}
+
+.announcements-section {
+    margin-bottom: 16px;
+}
+
+.announcements-card {
+    background: #fffef8;
+    border: 1px solid #ccd7c4;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.announcements-server-time {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 10px;
+    color: #63735e;
+    font-family: monospace;
+    text-align: right;
 }

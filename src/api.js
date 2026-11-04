@@ -31,6 +31,7 @@ export const api = {
     return request(`/quests/tasks${q ? `?${q}` : ''}`);
   },
   trainProgress: name => request(`/quests/train/progress?name=${encodeURIComponent(name)}`),
+  announcements: () => request('/announcements'),
   submitTrainQuest: (taskId, code, identity = {}) => request('/quests/train/submit', {
     method: 'POST',
     body: JSON.stringify({
