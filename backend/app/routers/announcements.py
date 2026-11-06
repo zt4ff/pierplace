@@ -14,7 +14,7 @@ from ..models.user import User
 from ..models.piscine import EventInstance
 from ..services.announcements import AnnouncementService
 from ..services.schedule import ScheduleService
-from ..websocket.announcements import ConnectionManager
+from ..websocket.announcements import ConnectionManager, manager
 
 router = APIRouter(tags=["websocket", "announcements"])
 
@@ -40,8 +40,6 @@ async def announcements_websocket(
     if not user:
         await websocket.close(code=4001, reason="Invalid token")
         return
-    
-    manager = ConnectionManager()
     
     try:
         await manager.connect(websocket, str(user.id))

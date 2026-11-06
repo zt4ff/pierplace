@@ -33,6 +33,22 @@
 
 ---
 
+## 2026-11-06 — backend/announcement-reliability: fix announcement scheduling and WebSocket broadcast reliability
+
+**What:**
+1. Corrected event transitions in `app/core/scheduler.py` by removing the inverted `event.opens_at > now` condition (events remain `scheduled` until `opens_at <= now`) and allowing expired `scheduled` events whose `closes_at <= now` to transition directly to `closed`.
+2. Created a shared module-level `manager = ConnectionManager()` in `app/websocket/announcements.py`, used by both `app/routers/announcements.py` and `app/core/scheduler.py` (with optional dependency injection in `EventScheduler`).
+3. Added regression test suite `backend/tests/test_announcements.py` covering future event preservation, opening/closing transitions, expired scheduled event transitions, shared manager instance equality, and broadcast delivery to connected clients.
+**Why:**
+- Defect A: Inverted comparison opened future scheduled events immediately upon scheduler execution.
+- Defect B: WebSocket router and background scheduler instantiated separate ConnectionManager objects, isolating connected clients from scheduler broadcast notifications.
+**Verify:**
+- `PYTHONPATH=backend backend/.venv/bin/pytest backend/tests` (20 passed: 9 announcement tests, 4 config tests, 5 contract tests, 2 lobby ws tests).
+**Know:**
+- Schema impact: none.
+- API and WebSocket protocol contracts preserved.
+
+
 ## 2026-10-15 — claude-opus-5 (backend agent): Render deploy for issue #1
 
 **What:** `backend/render.yaml` blueprint (managed Postgres 16 + web service,
