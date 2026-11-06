@@ -79,3 +79,6 @@ class ConnectionManager:
         for user_id in enrollments:
             self.add_pending_event(str(user_id), event)
             await self.send_pending_events(str(user_id))
+
+
+manager = ConnectionManager()

@@ -10,14 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.session import SessionLocal
 from ..models.piscine import EventInstance, Enrollment
 from ..services.announcements import AnnouncementService
-from ..websocket.announcements import ConnectionManager
+from ..websocket.announcements import ConnectionManager, manager as default_manager
 
 
 class EventScheduler:
     """Background scheduler for event lifecycle transitions."""
     
-    def __init__(self):
-        self.manager = ConnectionManager()
+    def __init__(self, manager: ConnectionManager | None = None):
+        self.manager = manager if manager is not None else default_manager
         self.warning_thresholds = {
             "15min": timedelta(minutes=15),
             "5min": timedelta(minutes=5),
@@ -61,12 +61,8 @@ class EventScheduler:
         """Check and process transitions for a single event."""
         old_status = event.status
         
-        if event.opens_at > now and event.status == "scheduled":
-            event.status = "open"
-            await session.flush()
-            await self._broadcast_event(event, "activity_opened", session)
-        elif event.opens_at <= now:
-            if event.closes_at <= now and event.status in ["open", "closing_soon"]:
+        if event.opens_at <= now:
+            if event.closes_at <= now and event.status in ["scheduled", "open", "closing_soon"]:
                 event.status = "closed"
                 await session.flush()
                 await self._broadcast_event(event, "activity_closed", session)
